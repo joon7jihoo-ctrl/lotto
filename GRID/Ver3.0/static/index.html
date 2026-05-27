@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="/favicon.png"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{min-height:100%;font-family:"Apple SD Gothic Neo","Malgun Gothic","Nanum Gothic",sans-serif;background:#f04060;color:#222}
+html,body{min-height:100%;font-family:"Apple SD Gothic Neo","Malgun Gothic","Nanum Gothic",sans-serif;background:#f04060;color:#222;text-align:center}
 
 /* ── 배경 워터마크 숫자 ── */
 .bg-wrap{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
@@ -46,42 +46,30 @@ html,body{min-height:100%;font-family:"Apple SD Gothic Neo","Malgun Gothic","Nan
 }
 
 /* ── 좌측 카드 (다음 회차) ── */
-.card-upcoming .logo-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.card-upcoming .logo-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px}
 .lotto-badge{background:#e8213a;color:#fff;font-size:11px;font-weight:800;padding:4px 9px;border-radius:6px;letter-spacing:.5px}
 .lotto-title{font-size:17px;font-weight:800;color:#222}
 .lotto-subtitle{font-size:11px;color:#888;margin-top:1px}
 
-.draw-no-row{display:flex;align-items:baseline;gap:6px;margin-bottom:6px}
+.draw-no-row{display:flex;align-items:baseline;justify-content:center;gap:6px;margin-bottom:6px}
 .draw-label{font-size:12px;color:#888}
 .draw-no{font-size:26px;font-weight:900;color:#e8213a}
 .draw-sub{font-size:12px;color:#aaa}
 
-.countdown-label{font-size:11px;color:#888;margin-bottom:4px}
-.countdown-wrap{display:flex;gap:6px;margin-bottom:14px}
+.countdown-label{font-size:11px;color:#888;margin-bottom:4px;text-align:center}
+.countdown-wrap{display:flex;gap:6px;margin-bottom:0;justify-content:center}
 .cd-unit{display:flex;flex-direction:column;align-items:center;gap:2px}
 .cd-val{font-size:22px;font-weight:900;color:#e8213a;min-width:44px;text-align:center;background:#fff5f5;border-radius:8px;padding:4px 6px;line-height:1}
 .cd-lbl{font-size:9px;color:#aaa}
 .cd-sep{font-size:22px;font-weight:900;color:#e8213a;line-height:1;align-self:flex-start;margin-top:6px}
 
-.prize-row{font-size:12px;color:#888;margin-bottom:16px}
-.prize-row b{color:#e8213a}
-
-.btn-buy{
-  display:block;width:100%;padding:14px;
-  background:#e8213a;color:#fff;border:none;
-  border-radius:10px;font-size:15px;font-weight:800;
-  cursor:pointer;text-align:center;letter-spacing:-.2px;
-  text-decoration:none;transition:opacity .15s;
-}
-.btn-buy:hover{opacity:.88}
-
 /* ── 우측 카드 (최근 추첨) ── */
-.card-result .result-header{display:flex;align-items:baseline;gap:8px;margin-bottom:14px}
+.card-result .result-header{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-bottom:14px}
 .result-title{font-size:16px;font-weight:800;color:#222}
 .result-round{font-size:13px;color:#888}
 .result-date{font-size:11px;color:#bbb}
 
-.balls-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.balls-row{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .ball{
   width:42px;height:42px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
@@ -101,19 +89,6 @@ html,body{min-height:100%;font-family:"Apple SD Gothic Neo","Malgun Gothic","Nan
 .b5 {background:linear-gradient(145deg,#c7e85d,#B0D840)}
 .b-bonus{background:linear-gradient(145deg,#aaa,#888);opacity:.85}
 
-.result-prize{font-size:12px;color:#888;margin-bottom:14px}
-.result-prize b{color:#e8213a}
-
-.nav-links{display:flex;flex-direction:column;gap:6px}
-.nav-link{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:9px 12px;background:#f9f9f9;border-radius:8px;
-  font-size:12px;color:#555;text-decoration:none;
-  transition:background .12s;
-}
-.nav-link:hover{background:#f0f0f0}
-.nav-link .arrow{color:#ccc;font-size:14px}
-
 /* ── 로딩 오버레이 ── */
 #loading-overlay{
   display:none;position:fixed;inset:0;
@@ -130,18 +105,6 @@ html,body{min-height:100%;font-family:"Apple SD Gothic Neo","Malgun Gothic","Nan
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-msg{color:#fff;font-size:14px;font-weight:600}
-
-/* ── 시간 제한 배너 ── */
-#time-lock{
-  display:none;
-  background:rgba(0,0,0,.7);color:#fff;
-  padding:14px 22px;border-radius:12px;
-  font-size:14px;font-weight:700;text-align:center;
-  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-  z-index:600;min-width:260px;
-  box-shadow:0 8px 32px rgba(0,0,0,.5);
-}
-#time-lock.show{display:block}
 
 /* ── 결과 팝업 ── */
 #result-popup{
@@ -199,11 +162,6 @@ html,body{min-height:100%;font-family:"Apple SD Gothic Neo","Malgun Gothic","Nan
 <div id="loading-overlay">
   <div class="spinner"></div>
   <p class="loading-msg" id="loading-msg">AI 분석 중...</p>
-</div>
-
-<!-- 시간 제한 -->
-<div id="time-lock">
-  ⏰ 예상 번호는 <b>오후 6시 이후</b>에 확인할 수 있습니다
 </div>
 
 <!-- 결과 팝업 -->
@@ -273,11 +231,6 @@ html,body{min-height:100%;font-family:"Apple SD Gothic Neo","Malgun Gothic","Nan
         </div>
       </div>
 
-      <div class="prize-row">
-        1등 예상 당첨금 <b id="next-prize">동행복권 사이트 참조</b>
-      </div>
-
-      <button class="btn-buy" onclick="buyLotto()">바로구매</button>
     </div>
 
     <!-- 우측: 최근 추첨 결과 -->
@@ -300,27 +253,6 @@ html,body{min-height:100%;font-family:"Apple SD Gothic Neo","Malgun Gothic","Nan
         <div class="ball b-bonus" style="opacity:.3">?</div>
       </div>
 
-      <div class="result-prize">
-        1등 당첨금 <b id="latest-prize">동행복권 사이트 참조</b>
-      </div>
-
-      <div class="nav-links">
-        <a href="https://www.dhlottery.co.kr/gameResult.do?method=byWin" target="_blank" class="nav-link">
-          <span>당첨 결과 확인</span><span class="arrow">›</span>
-        </a>
-        <a href="https://www.dhlottery.co.kr/store.do?method=topStoreLocation&type=lotto" target="_blank" class="nav-link">
-          <span>복권 판매점 찾기</span><span class="arrow">›</span>
-        </a>
-        <a href="https://www.dhlottery.co.kr/gameInfo.do?method=lotto645" target="_blank" class="nav-link">
-          <span>로또 6/45 안내</span><span class="arrow">›</span>
-        </a>
-        <a href="https://dhlottery.co.kr/common.do?method=main" target="_blank" class="nav-link">
-          <span>동행복권 홈페이지</span><span class="arrow">›</span>
-        </a>
-        <a href="https://www.dhlottery.co.kr/gameInfo.do?method=statView" target="_blank" class="nav-link">
-          <span>번호 통계 분석</span><span class="arrow">›</span>
-        </a>
-      </div>
     </div>
 
   </div><!-- .main-wrap -->
@@ -433,56 +365,9 @@ async function loadInfo() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// 바로 구매
-// ══════════════════════════════════════════════════════════════
-function buyLotto() {
-  const buyUrl = 'https://www.dhlottery.co.kr/gameInfo.do?method=buyLotto&wisePick=Y';
-  const ua = navigator.userAgent || '';
-  const isAndroid = /android/i.test(ua);
-  const isIOS     = /iphone|ipad|ipod/i.test(ua);
-
-  if (isAndroid) {
-    // Android: intent URI로 앱 실행 시도, 실패 시 웹 fallback
-    const intentUrl = 'intent://open#Intent;scheme=dhlottery;package=kr.co.nhn.android.android.lotto645;S.browser_fallback_url=' + encodeURIComponent(buyUrl) + ';end';
-    window.location.href = intentUrl;
-    return;
-  }
-
-  if (isIOS) {
-    // iOS: iframe trick으로 커스텀 스킴 시도
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = 'dhlottery://';
-    document.body.appendChild(iframe);
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-      window.location.href = buyUrl;
-    }, 800);
-    return;
-  }
-
-  // 데스크탑
-  window.open(buyUrl, '_blank');
-}
-
-// ══════════════════════════════════════════════════════════════
-// 18시 제한
-// ══════════════════════════════════════════════════════════════
-function isResultAvailable() {
-  return new Date().getHours() >= 18;
-}
-
-// ══════════════════════════════════════════════════════════════
 // 예상 번호 버튼 클릭
 // ══════════════════════════════════════════════════════════════
 async function onPredictClick() {
-  if (!isResultAvailable()) {
-    const lock = document.getElementById('time-lock');
-    lock.classList.add('show');
-    setTimeout(() => lock.classList.remove('show'), 2500);
-    return;
-  }
-
   const overlay = document.getElementById('loading-overlay');
   overlay.classList.add('show');
   document.getElementById('loading-msg').textContent = 'AI 분석 중... 잠시만 기다려 주세요';

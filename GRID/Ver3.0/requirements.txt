@@ -1,0 +1,18 @@
+# Lotto Grid AI Ver3.0 — Web App 의존성
+# 설치: pip install -r requirements.txt
+
+# Web framework
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9
+
+# Data
+pandas>=2.2.0
+numpy>=1.26.0
+openpyxl>=3.1.2
+
+# HTTP
+requests>=2.31.0
+
+# Pydantic (FastAPI 내장, 버전 고정)
+pydantic>=2.0.0

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>🎯 Lotto Grid AI Ver3.0</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      colors: {
+        bg:      '#0b1020',
+        surface: '#0f172a',
+        card:    '#111827',
+        bdr:     '#1e293b',
+        bdr2:    '#334155',
+      },
+      fontFamily: { mono: ['"Consolas"','"Courier New"','monospace'] }
+    }}
+  }
+</script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#0b1020;color:#e2e8f0;font-family:"Segoe UI","Apple SD Gothic Neo",sans-serif;font-size:13px}
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:#111827}
+  ::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:#1e293b;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;background:#38bdf8;cursor:pointer;border:2px solid #0b1020}
+  input[type=number]{background:#0f172a;border:1px solid #334155;border-radius:6px;color:#f8fafc;padding:3px 6px;text-align:right;width:64px;font-size:12px}
+  input[type=number]:focus{outline:none;border-color:#38bdf8}
+  .section-title{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+  .group-box{background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:12px;margin-bottom:10px}
+  .btn-primary{background:linear-gradient(135deg,#2563eb,#0891b2);color:#fff;border:none;border-radius:8px;padding:9px 12px;font-weight:700;font-size:12px;cursor:pointer;width:100%;transition:.2s}
+  .btn-primary:hover{opacity:.85}
+  .btn-secondary{background:#1f2937;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:8px 12px;font-weight:600;font-size:12px;cursor:pointer;width:100%;transition:.2s}
+  .btn-secondary:hover{background:#273449;border-color:#38bdf8}
+  .slider-row{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+  .slider-label{color:#94a3b8;min-width:120px;font-size:11px}
+  .slider-row input[type=range]{flex:1}
+  .summary-card{background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:12px;margin-bottom:10px;font-size:12px;line-height:1.7}
+  .legend-bar{display:flex;gap:14px;flex-wrap:wrap;font-size:10px;color:#64748b;padding:6px 0}
+  .legend-dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:3px;vertical-align:middle}
+  table{border-collapse:collapse;width:100%}
+  thead th{position:sticky;top:0;background:#0f172a;color:#64748b;font-size:11px;font-weight:700;padding:6px 4px;text-align:center;border-bottom:1px solid #1e293b}
+  tbody tr:hover{background:#172033}
+  tbody td{padding:5px 5px;text-align:center;font-size:12px;border-bottom:1px solid #0f172a}
+  #combo-output{font-family:"Consolas","Courier New",monospace;font-size:12px;white-space:pre;color:#a7f3d0;background:#07111f;border:1px solid #1e293b;border-radius:8px;padding:10px;overflow:auto}
+  #log-box{font-family:"Consolas",monospace;font-size:10px;color:#64748b;background:#07111f;border:1px solid #1e293b;border-radius:6px;padding:8px;overflow-y:auto;height:110px}
+  .badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700}
+  .badge-green{background:#052e16;color:#4ade80;border:1px solid #166534}
+  .badge-blue{background:#082f49;color:#38bdf8;border:1px solid #0369a1}
+  .badge-amber{background:#2d1700;color:#fbbf24;border:1px solid #92400e}
+  .badge-red{background:#2d0a0a;color:#f87171;border:1px solid #991b1b}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spin{animation:spin .9s linear infinite}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  .toast{animation:fadeIn .25s ease}
+  #canvas-tooltip{position:fixed;background:#111827;border:1px solid #334155;border-radius:6px;padding:7px 10px;font-size:11px;pointer-events:none;z-index:99;display:none;color:#e2e8f0;min-width:140px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+</style>
+</head>
+<body style="display:flex;flex-direction:column;height:100vh;overflow:hidden">
+
+<!-- ─── 로딩 오버레이 ────────────────────────────────────────────────── -->
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px">
+  <div style="width:44px;height:44px;border:4px solid #22c55e;border-top-color:transparent;border-radius:50%" class="spin"></div>
+  <p id="overlay-msg" style="color:#94a3b8;font-size:13px"></p>
+</div>
+
+<!-- ─── 토스트 컨테이너 ──────────────────────────────────────────────── -->
+<div id="toast-container" style="position:fixed;top:16px;right:16px;z-index:200;display:flex;flex-direction:column;gap:8px"></div>
+
+<!-- ─── Canvas 툴팁 ──────────────────────────────────────────────────── -->
+<div id="canvas-tooltip"></div>
+
+<!-- ─── 헤더 ─────────────────────────────────────────────────────────── -->
+<header style="background:#0f172a;border-bottom:1px solid #1e293b;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+  <div style="display:flex;align-items:center;gap:12px">
+    <span style="font-size:18px;font-weight:800;color:#f8fafc">🎯 Lotto Grid AI</span>
+    <span style="font-size:11px;font-weight:600;color:#38bdf8;background:#082f49;padding:2px 8px;border-radius:10px;border:1px solid #0369a1">Ver3.0 Web</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <div id="status-dot" style="width:8px;height:8px;border-radius:50%;background:#334155"></div>
+    <span id="status-text" style="font-size:11px;color:#64748b">준비</span>
+  </div>
+</header>
+
+<!-- ─── 메인 3패널 레이아웃 ──────────────────────────────────────────── -->
+<div style="display:flex;flex:1;overflow:hidden">
+
+  <!-- ① 좌측 설정 패널 ──────────────────────────────────────────────── -->
+  <aside style="width:300px;min-width:280px;background:#0f172a;border-right:1px solid #1e293b;overflow-y:auto;padding:12px;flex-shrink:0">
+
+    <!-- Layer 1 -->
+    <div class="group-box">
+      <div class="section-title">Layer 1 · 동적 데이터 로드</div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;margin-bottom:10px">
+        <span style="font-size:11px;color:#94a3b8">시작 회차</span>
+        <input type="number" id="cfg-start_draw" min="1" max="3000" value="1">
+        <span style="font-size:11px;color:#94a3b8">최대 회차</span>
+        <input type="number" id="cfg-max_draw" min="0" max="3000" value="0" title="0=자동">
+      </div>
+      <button class="btn-primary" id="btn-analyze" onclick="callAnalyze()">
+        🔍 데이터 로드 + 백테스트 분석
+      </button>
+    </div>
+
+    <!-- Layer 2~5 가중치 -->
+    <div class="group-box">
+      <div class="section-title">Layer 2~5 · 예상수 가중치</div>
+      <div class="slider-row">
+        <span class="slider-label">시계열 빈도</span>
+        <input type="range" id="sl-recent_weight" min="0" max="100" value="55">
+        <input type="number" id="cfg-recent_weight" min="0" max="100" value="55">
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">장기 미출수</span>
+        <input type="range" id="sl-missing_weight" min="0" max="100" value="25">
+        <input type="number" id="cfg-missing_weight" min="0" max="100" value="25">
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">직전사각수</span>
+        <input type="range" id="sl-square_weight" min="0" max="100" value="0">
+        <input type="number" id="cfg-square_weight" min="0" max="100" value="0">
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">완전사각/데드존</span>
+        <input type="range" id="sl-deadzone_weight" min="0" max="100" value="5">
+        <input type="number" id="cfg-deadzone_weight" min="0" max="100" value="5">
+      </div>
+    </div>
+
+    <!-- Layer 6~8 후보/검증 -->
+    <div class="group-box">
+      <div class="section-title">Layer 6~8 · 후보/검증 설정</div>
+      <div class="slider-row">
+        <span class="slider-label">이전당첨 믹스</span>
+        <input type="range" id="sl-mix_previous_ratio" min="0" max="100" value="10">
+        <input type="number" id="cfg-mix_previous_ratio" min="0" max="100" value="10">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;margin-top:8px">
+        <span style="font-size:11px;color:#94a3b8">데드존 추적 N</span>
+        <input type="number" id="cfg-deadzone_window" min="1" max="200" value="20">
+        <span style="font-size:11px;color:#94a3b8">핵심 예상수 N</span>
+        <input type="number" id="cfg-top_candidate_count" min="6" max="45" value="20">
+        <span style="font-size:11px;color:#94a3b8">출력 조합 수</span>
+        <input type="number" id="cfg-output_limit" min="1" max="300" value="30">
+        <span style="font-size:11px;color:#94a3b8">조합 간 최대 중복</span>
+        <input type="number" id="cfg-max_overlap" min="0" max="5" value="4">
+        <span style="font-size:11px;color:#94a3b8">인기패턴 위험 최대</span>
+        <input type="number" id="cfg-max_popularity_risk" min="0" max="10" value="3">
+        <span style="font-size:11px;color:#94a3b8">백테스트 회차</span>
+        <input type="number" id="cfg-backtest_rounds" min="0" max="300" value="80">
+      </div>
+      <div style="margin-top:6px;padding:8px;background:#07111f;border:1px solid #1e293b;border-radius:6px;font-size:10px;color:#64748b;line-height:1.8">
+        · 총합: 100~170 &nbsp;· 홀짝: 2~4개<br>
+        · 고저: 고번호(23~45) 2~4개<br>
+        · 최대 2연속 &nbsp;· AC값 ≥ 7<br>
+        · 생일수/연속수/등차 패턴 회피
+      </div>
+      <button class="btn-secondary" style="margin-top:10px" id="btn-generate" onclick="callGenerate()">
+        ⚡ 관리형 번호 조합 생성
+      </button>
+    </div>
+
+    <!-- 히든 설정값 -->
+    <input type="hidden" id="cfg-backtest_train_window" value="120">
+    <input type="hidden" id="cfg-sum_min" value="100">
+    <input type="hidden" id="cfg-sum_max" value="170">
+    <input type="hidden" id="cfg-min_ac" value="7">
+    <input type="hidden" id="cfg-odd_min" value="2">
+    <input type="hidden" id="cfg-odd_max" value="4">
+    <input type="hidden" id="cfg-high_min" value="2">
+    <input type="hidden" id="cfg-high_max" value="4">
+
+    <!-- 진행 로그 -->
+    <div class="group-box" style="margin-bottom:0">
+      <div class="section-title">진행 로그</div>
+      <div id="log-box"></div>
+    </div>
+  </aside>
+
+  <!-- ② 중앙 히트맵 패널 ────────────────────────────────────────────── -->
+  <main style="flex:1;display:flex;flex-direction:column;overflow:hidden;padding:12px;gap:10px;min-width:0">
+
+    <!-- 요약 카드 -->
+    <div class="summary-card" id="summary-card">
+      <span style="color:#64748b">데이터를 로드해 주세요. — </span>
+      <span style="color:#334155;font-size:11px">Layer 1 데이터 로드 + 백테스트 분석 버튼 클릭</span>
+    </div>
+
+    <!-- Canvas 히트맵 -->
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative">
+      <canvas id="heatmap-canvas"
+              style="display:block;max-width:100%;max-height:100%;border-radius:8px;cursor:crosshair"></canvas>
+      <div id="heatmap-placeholder"
+           style="color:#334155;font-size:14px;text-align:center;line-height:2.2">
+        📊 데이터를 로드하면<br>7×7 레이어 히트맵이 표시됩니다
+      </div>
+    </div>
+
+    <!-- 범례 -->
+    <div class="legend-bar">
+      <span><span class="legend-dot" style="background:rgba(245,158,11,.55)"></span>직전사각수(Layer 3)</span>
+      <span><span class="legend-dot" style="background:rgba(56,189,248,.45)"></span>완전사각/데드존(Layer 4)</span>
+      <span><span class="legend-dot" style="background:transparent;border:2px solid #22c55e"></span>최종 예상수</span>
+      <span style="color:#fbbf24">■ 직전 회차 번호</span>
+      <span style="color:#475569">배경색 진할수록 고득점</span>
+    </div>
+  </main>
+
+  <!-- ③ 우측 점수표 + 조합 패널 ────────────────────────────────────── -->
+  <aside style="width:380px;min-width:340px;background:#0f172a;border-left:1px solid #1e293b;display:flex;flex-direction:column;overflow:hidden;padding:12px;gap:10px;flex-shrink:0">
+
+    <!-- 번호별 점수표 -->
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+      <div class="section-title" style="flex-shrink:0">번호별 종합 점수</div>
+      <div style="flex:1;overflow-y:auto;border:1px solid #1e293b;border-radius:8px;min-height:0">
+        <table>
+          <thead>
+            <tr>
+              <th>번호</th><th>점수</th><th>최근N</th>
+              <th>미출gap</th><th>사각hit</th><th>DZ</th><th>이월</th>
+            </tr>
+          </thead>
+          <tbody id="score-table-body">
+            <tr><td colspan="7" style="color:#334155;padding:20px;font-size:11px">분석 후 표시</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 최종 조합 출력 -->
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-shrink:0">
+        <div class="section-title" style="margin:0">Layer 8~10 최종 조합</div>
+        <button onclick="copyCombo()" style="background:#1f2937;border:1px solid #334155;border-radius:5px;color:#94a3b8;font-size:10px;padding:2px 8px;cursor:pointer">📋 복사</button>
+      </div>
+      <div id="combo-output" style="flex:1;overflow-y:auto;min-height:0">
+        상단의 "관리형 번호 조합 생성" 버튼을 눌러 주세요.
+      </div>
+    </div>
+  </aside>
+
+</div><!-- end main -->
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// 상태
+// ══════════════════════════════════════════════════════════════════════════════
+const STATE = { analysisData: null };
+
+const CONFIG_FIELDS = [
+  'start_draw','max_draw','deadzone_window','top_candidate_count',
+  'output_limit','recent_weight','missing_weight','square_weight',
+  'deadzone_weight','mix_previous_ratio','max_overlap',
+  'max_popularity_risk','backtest_rounds','backtest_train_window',
+  'sum_min','sum_max','min_ac','odd_min','odd_max','high_min','high_max',
+];
+const SLIDER_FIELDS = ['recent_weight','missing_weight','square_weight','deadzone_weight','mix_previous_ratio'];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 슬라이더 양방향 동기화
+// ══════════════════════════════════════════════════════════════════════════════
+SLIDER_FIELDS.forEach(key => {
+  const sl = document.getElementById(`sl-${key}`);
+  const num = document.getElementById(`cfg-${key}`);
+  if (!sl || !num) return;
+  sl.addEventListener('input',  () => { num.value = sl.value; });
+  num.addEventListener('input', () => { sl.value = num.value; });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 설정 읽기
+// ══════════════════════════════════════════════════════════════════════════════
+function getConfig() {
+  const cfg = {};
+  CONFIG_FIELDS.forEach(k => {
+    const el = document.getElementById(`cfg-${k}`);
+    cfg[k] = el ? (parseInt(el.value, 10) || 0) : 0;
+  });
+  return cfg;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 로딩 / 토스트 / 로그
+// ══════════════════════════════════════════════════════════════════════════════
+function setOverlay(show, msg = '') {
+  const el = document.getElementById('overlay');
+  el.style.display = show ? 'flex' : 'none';
+  if (msg) document.getElementById('overlay-msg').textContent = msg;
+}
+function setStatus(color, text) {
+  document.getElementById('status-dot').style.background = color;
+  document.getElementById('status-text').textContent = text;
+}
+function showToast(msg, type = 'info') {
+  const c = document.getElementById('toast-container');
+  const d = document.createElement('div');
+  const colors = {
+    error:   'background:#450a0a;border:1px solid #991b1b;color:#fca5a5',
+    info:    'background:#0f172a;border:1px solid #334155;color:#94a3b8',
+    success: 'background:#052e16;border:1px solid #166534;color:#86efac',
+  };
+  d.style.cssText = `${colors[type]||colors.info};padding:9px 14px;border-radius:8px;font-size:12px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.5)`;
+  d.className = 'toast';
+  d.textContent = msg;
+  c.appendChild(d);
+  setTimeout(() => d.remove(), type === 'error' ? 6000 : 4000);
+}
+function appendLog(msg) {
+  const box = document.getElementById('log-box');
+  const t = new Date().toLocaleTimeString('ko', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const p = document.createElement('p');
+  p.textContent = `[${t}] ${msg}`;
+  box.appendChild(p);
+  box.scrollTop = box.scrollHeight;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// API 호출
+// ══════════════════════════════════════════════════════════════════════════════
+async function callAnalyze() {
+  setOverlay(true, '동행복권 데이터 로드 + 분석 중...');
+  setStatus('#f59e0b', '분석 중...');
+  appendLog('분석 요청 시작');
+  document.getElementById('btn-analyze').disabled = true;
+  document.getElementById('btn-generate').disabled = true;
+  try {
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(getConfig()),
+    });
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error(json.message || 'API 오류');
+    STATE.analysisData = json.data;
+    renderAll(json.data);
+    setStatus('#22c55e', `${json.data.latest_draw_no}회 분석 완료`);
+    appendLog(`완료 — ${json.data.total_draws.toLocaleString()}회차 | 소스: ${json.data.source_name}`);
+    (json.data.warnings || []).forEach(w => { appendLog('⚠ ' + w); showToast(w, 'info'); });
+  } catch(e) {
+    setStatus('#ef4444', '오류');
+    appendLog('❌ ' + e.message);
+    showToast(e.message, 'error');
+  } finally {
+    setOverlay(false);
+    document.getElementById('btn-analyze').disabled = false;
+    document.getElementById('btn-generate').disabled = false;
+  }
+}
+
+async function callGenerate() {
+  if (!STATE.analysisData) {
+    showToast('먼저 데이터 로드 + 분석을 실행해 주세요.', 'error'); return;
+  }
+  setOverlay(true, '조합 생성 중 (수학 필터 적용)...');
+  appendLog('조합 생성 요청');
+  document.getElementById('btn-generate').disabled = true;
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(getConfig()),
+    });
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error(json.message || 'API 오류');
+    if (json.data) { STATE.analysisData = json.data; renderAll(json.data); }
+    renderCombinations(json);
+    appendLog(`조합 ${json.combinations.length}개 생성 완료`);
+    (json.warnings || []).forEach(w => { appendLog('⚠ ' + w); showToast(w, 'info'); });
+  } catch(e) {
+    appendLog('❌ ' + e.message);
+    showToast(e.message, 'error');
+  } finally {
+    setOverlay(false);
+    document.getElementById('btn-generate').disabled = false;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 렌더링 통합
+// ══════════════════════════════════════════════════════════════════════════════
+function renderAll(data) {
+  renderSummaryCard(data);
+  renderHeatmap(data);
+  renderScoreTable(data.score_table);
+  document.getElementById('heatmap-placeholder').style.display = 'none';
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 요약 카드
+// ══════════════════════════════════════════════════════════════════════════════
+function renderSummaryCard(d) {
+  const bt = d.backtest || {};
+  const nums = d.latest_numbers.map(n => `<b style="color:#fbbf24">${String(n).padStart(2,'0')}</b>`).join(' ');
+  const exp  = d.final_expected_numbers.slice(0,10).map(n => `<span style="color:#4ade80">${String(n).padStart(2,'0')}</span>`).join(' ');
+  const btHTML = bt.rounds > 0
+    ? `평균 <b style="color:#38bdf8">${bt.avg_hits}</b> (랜덤 ${bt.random_avg_hits}) &nbsp;·&nbsp; 3개↑ <b style="color:#38bdf8">${bt.hit3_rate}%</b> (랜덤 ${bt.random_hit3_rate}%)`
+    : '<span style="color:#475569">데이터 부족</span>';
+  document.getElementById('summary-card').innerHTML = `
+    <div style="display:grid;grid-template-columns:70px 1fr;gap:4px 16px;align-items:baseline">
+      <span style="color:#64748b;font-size:11px;white-space:nowrap">소스</span>
+      <span style="color:#94a3b8">${d.source_name}</span>
+      <span style="color:#64748b;font-size:11px;white-space:nowrap">회차</span>
+      <span><b style="color:#f8fafc">${d.latest_draw_no}</b>회 <span style="color:#64748b">(${d.latest_draw_date || '-'})</span> &nbsp;총 <b style="color:#38bdf8">${d.total_draws.toLocaleString()}</b>회 분석</span>
+      <span style="color:#64748b;font-size:11px;white-space:nowrap">직전당첨</span>
+      <span style="font-family:monospace">${nums} &nbsp;<span style="color:#64748b;font-size:11px">보너스 ${d.latest_bonus ?? '-'}</span></span>
+      <span style="color:#64748b;font-size:11px;white-space:nowrap">예상TOP10</span>
+      <span style="font-family:monospace">${exp}</span>
+      <span style="color:#64748b;font-size:11px;white-space:nowrap">백테스트</span>
+      <span>${btHTML}</span>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 히트맵 Canvas 렌더러
+// ══════════════════════════════════════════════════════════════════════════════
+const MAKO_STOPS = [
+  [0.00, [ 11,  4,  5]],   // 매우 낮은 점수: 거의 검정
+  [0.20, [ 22, 50,120]],   // 낮은 점수: 진한 파랑
+  [0.45, [ 12,135,175]],   // 중간 점수: 밝은 청록
+  [0.70, [ 80,205,160]],   // 높은 점수: 밝은 녹청
+  [1.00, [235,248,252]],   // 최고 점수: 거의 흰 하늘색
+];
+
+function makoColor(t) {
+  t = Math.max(0, Math.min(1, t));
+  let lo = MAKO_STOPS[0], hi = MAKO_STOPS[MAKO_STOPS.length - 1];
+  for (let i = 0; i < MAKO_STOPS.length - 1; i++) {
+    if (t >= MAKO_STOPS[i][0] && t <= MAKO_STOPS[i+1][0]) {
+      lo = MAKO_STOPS[i]; hi = MAKO_STOPS[i+1]; break;
+    }
+  }
+  const f = (hi[0] === lo[0]) ? 0 : (t - lo[0]) / (hi[0] - lo[0]);
+  return `rgb(${Math.round(lo[1][0]+f*(hi[1][0]-lo[1][0]))},${Math.round(lo[1][1]+f*(hi[1][1]-lo[1][1]))},${Math.round(lo[1][2]+f*(hi[1][2]-lo[1][2]))})`;
+}
+
+// 숫자 → 히트맵 데이터 캐시
+let _tooltipData = {};
+
+function renderHeatmap(data) {
+  const canvas = document.getElementById('heatmap-canvas');
+  const container = canvas.parentElement;
+  const size = Math.min(container.clientWidth - 4, container.clientHeight - 4);
+  if (size < 50) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width  = size + 'px';
+  canvas.style.height = size + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const GRID = 7;
+  const cell = size / GRID;
+
+  const prevSq   = new Set(data.prev_square_numbers   || []);
+  const deadzone = new Set(data.deadzone_numbers       || []);
+  const expected = new Set(data.final_expected_numbers || []);
+  const latest   = new Set(data.latest_numbers         || []);
+  const scoreMap = {};
+  let maxS = 0.01;
+
+  (data.heatmap_cells || []).forEach(c => {
+    scoreMap[c.number] = c.score;
+    if (c.score > maxS) maxS = c.score;
+  });
+
+  _tooltipData = {};
+  data.score_table.forEach(r => { _tooltipData[r.number] = r; });
+
+  // ── 그리기 ──────────────────────────────────────────────────────────────
+  ctx.fillStyle = '#0b1020';
+  ctx.fillRect(0, 0, size, size);
+
+  for (let row = 0; row < GRID; row++) {
+    for (let col = 0; col < GRID; col++) {
+      const num = row * GRID + col + 1;
+      const x = col * cell, y = row * cell;
+
+      if (num > 45) {
+        ctx.fillStyle = '#0a0f1d';
+        ctx.fillRect(x, y, cell, cell);
+        // 빗금
+        ctx.save();
+        ctx.strokeStyle = '#131c30';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let d = -cell; d < cell * 2; d += 8) {
+          ctx.moveTo(x + d,       y);
+          ctx.lineTo(x + d + cell, y + cell);
+        }
+        ctx.stroke();
+        ctx.restore();
+        continue;
+      }
+
+      const score = scoreMap[num] || 0;
+      const t = score / maxS;
+
+      // 배경 (mako colormap) — 전체 범위 사용
+      ctx.fillStyle = makoColor(t);
+      ctx.fillRect(x, y, cell, cell);
+
+      // 오버레이: 데드존 (파랑)
+      if (deadzone.has(num)) {
+        ctx.fillStyle = 'rgba(56,189,248,0.22)';
+        ctx.fillRect(x, y, cell, cell);
+      }
+      // 오버레이: 직전사각수 (노랑)
+      if (prevSq.has(num)) {
+        ctx.fillStyle = 'rgba(245,158,11,0.24)';
+        ctx.fillRect(x, y, cell, cell);
+      }
+
+      // 기본 그리드 선
+      ctx.strokeStyle = '#0b1020';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, cell, cell);
+
+      // 예상수: 녹색 테두리
+      if (expected.has(num)) {
+        ctx.strokeStyle = '#22c55e';
+        ctx.lineWidth = Math.max(2, cell * 0.055);
+        const pad = ctx.lineWidth / 2;
+        ctx.strokeRect(x + pad, y + pad, cell - ctx.lineWidth, cell - ctx.lineWidth);
+      }
+
+      // 번호 텍스트
+      const isLatest  = latest.has(num);
+      const fontSz    = Math.floor(cell * 0.27);
+      const scoreSz   = Math.floor(cell * 0.19);
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+
+      if (isLatest) {
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur  = 8;
+        ctx.fillStyle   = '#fef08a';
+        ctx.font        = `bold ${fontSz}px Consolas,monospace`;
+      } else {
+        ctx.shadowBlur = 0;
+        // 중간 이상 점수면 흰색, 낮은 점수만 회색
+        ctx.fillStyle  = t > 0.35 ? '#f8fafc' : '#94a3b8';
+        ctx.font       = `${fontSz}px Consolas,monospace`;
+      }
+      ctx.fillText(String(num), x + cell/2, y + cell * 0.38);
+      ctx.shadowBlur = 0;
+
+      // 점수 — 배경이 밝으면 어둡게, 어두우면 밝게
+      ctx.fillStyle = t > 0.55 ? '#1e293b' : (t > 0.25 ? '#94a3b8' : '#475569');
+      ctx.font = `${scoreSz}px Consolas,monospace`;
+      ctx.fillText(score.toFixed(0), x + cell/2, y + cell * 0.65);
+    }
+  }
+
+  // 열/행 라벨
+  ctx.fillStyle = '#475569';
+  ctx.font = `${Math.floor(cell * 0.18)}px Consolas,monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  for (let c = 0; c < 7; c++) ctx.fillText(c+1, c*cell + cell/2, 2);
+
+  // ── 툴팁 이벤트 ──────────────────────────────────────────────────────
+  canvas.onmousemove = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) / (rect.width  / GRID);
+    const my = (e.clientY - rect.top)  / (rect.height / GRID);
+    const col = Math.floor(mx), row = Math.floor(my);
+    const num = row * GRID + col + 1;
+    const tip = document.getElementById('canvas-tooltip');
+    if (num < 1 || num > 45) { tip.style.display = 'none'; return; }
+    const d = _tooltipData[num];
+    if (!d) { tip.style.display = 'none'; return; }
+
+    const flags = [
+      latest.has(num)   ? '<span style="color:#fbbf24">직전회차</span>'  : '',
+      expected.has(num) ? '<span style="color:#4ade80">예상수</span>'    : '',
+      prevSq.has(num)   ? '<span style="color:#fbbf24">직전사각</span>'  : '',
+      deadzone.has(num) ? '<span style="color:#38bdf8">데드존</span>'    : '',
+    ].filter(Boolean).join(' · ') || '—';
+
+    tip.innerHTML = `
+      <b style="font-size:14px;color:#f8fafc">${num}번</b> &nbsp;
+      <b style="color:#4ade80">${d.score}점</b><br>
+      <span style="color:#94a3b8">최근빈도: ${d.freq_recent_count} &nbsp; 미출gap: ${d.missing_gap}</span><br>
+      <span style="color:#94a3b8">사각hit: ${d.square_hit_count}</span><br>
+      ${flags}
+    `;
+    tip.style.display = 'block';
+    tip.style.left = (e.clientX + 12) + 'px';
+    tip.style.top  = (e.clientY - 10) + 'px';
+  };
+  canvas.onmouseleave = () => {
+    document.getElementById('canvas-tooltip').style.display = 'none';
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 점수표
+// ══════════════════════════════════════════════════════════════════════════════
+function renderScoreTable(rows) {
+  const tbody = document.getElementById('score-table-body');
+  tbody.innerHTML = '';
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    const numStyle  = r.is_latest     ? 'color:#fbbf24;font-weight:700' : 'color:#e2e8f0';
+    const scoreClr  = r.score >= 70   ? '#4ade80' : r.score >= 40 ? '#a3e635' : '#94a3b8';
+    const dzBadge   = r.is_deadzone   ? '<span class="badge badge-blue">DZ</span>'  : '';
+    const sqBadge   = r.is_prev_square ? '<span class="badge badge-amber">SQ</span>' : '';
+    const latBadge  = r.is_latest     ? '<span class="badge badge-amber">★</span>'  : '';
+    tr.innerHTML = `
+      <td style="${numStyle}">${r.number}</td>
+      <td style="color:${scoreClr};font-weight:700">${r.score}</td>
+      <td style="color:#94a3b8">${r.freq_recent_count}</td>
+      <td style="color:#94a3b8">${r.missing_gap}</td>
+      <td style="color:#94a3b8">${r.square_hit_count}</td>
+      <td>${dzBadge}${sqBadge}</td>
+      <td>${latBadge}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 조합 출력
+// ══════════════════════════════════════════════════════════════════════════════
+function renderCombinations(json) {
+  const el = document.getElementById('combo-output');
+  const { combinations = [], warnings = [] } = json;
+  if (!combinations.length) { el.textContent = '조건을 만족하는 조합이 없습니다.'; return; }
+
+  const warnLines = warnings.map(w => `⚠  ${w}`);
+  const header = `${'순위'.padEnd(4)} | ${'번호 조합'.padEnd(18)}| 합계 | 홀 | 고 | AC | 이월 | 패턴          | 점수`;
+  const sep    = '-'.repeat(header.length);
+  const lines  = combinations.map(r => {
+    const nums = r.numbers.map(n => String(n).padStart(2,'0')).join(' ');
+    const pat  = r.pattern_notes ? `${r.pattern_risk}(${r.pattern_notes})` : `${r.pattern_risk}`;
+    return `${String(r.rank).padStart(4)} | ${nums.padEnd(18)}| ${String(r.total).padStart(4)} | ${r.odd_count}  | ${r.high_count}  | ${String(r.ac_value).padStart(2)} | ${String(r.carry_count).padStart(4)} | ${pat.padEnd(13)} | ${r.score.toFixed(2)}`;
+  });
+
+  el.textContent = [...warnLines, ...(warnLines.length?['']:[]), header, sep, ...lines].join('\n');
+}
+
+function copyCombo() {
+  const txt = document.getElementById('combo-output').textContent;
+  navigator.clipboard.writeText(txt).then(() => showToast('클립보드에 복사됐습니다.', 'success'));
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 리사이즈
+// ══════════════════════════════════════════════════════════════════════════════
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (STATE.analysisData) renderHeatmap(STATE.analysisData);
+  }, 150);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: lotto-grid-ai
+    env: python
+    region: singapore          # 한국에서 가장 가까운 리전
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0

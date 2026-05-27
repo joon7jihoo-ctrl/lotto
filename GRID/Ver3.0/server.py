@@ -1,16 +1,19 @@
 """Lotto Grid AI Analyzer - Web App Ver3.0 (FastAPI Backend)"""
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 # ── 경로 설정 ──────────────────────────────────────────────────────────────────
-BASE_DIR  = Path(__file__).resolve().parent
-VER2_DIR  = BASE_DIR.parent / "Ver 2.0"
-ROOT_DIR  = BASE_DIR.parent.parent           # D:\Development\lotto
-XLSX_PATH = ROOT_DIR / "lotto_history.xlsx"
-DB_PATH   = BASE_DIR / "lotto_history.db"    # Ver3.0 전용 DB
+BASE_DIR   = Path(__file__).resolve().parent
+VER2_DIR   = BASE_DIR.parent / "Ver 2.0"
+ROOT_DIR   = BASE_DIR.parent.parent              # D:\Development\lotto  (로컬)
+# 환경변수 LOTTO_XLSX 로 xlsx 경로를 외부에서 지정 가능 (배포 환경 대응)
+_xlsx_env  = os.environ.get("LOTTO_XLSX")
+XLSX_PATH  = Path(_xlsx_env) if _xlsx_env else ROOT_DIR / "lotto_history.xlsx"
+DB_PATH    = BASE_DIR / "lotto_history.db"       # Ver3.0 전용 DB
 STATIC_DIR = BASE_DIR / "static"
 
 sys.path.insert(0, str(VER2_DIR))
@@ -199,5 +202,7 @@ def generate(req: ConfigRequest):
 
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=False)
+    import uvicorn, os
+    port = int(os.environ.get("PORT", 8000))
+    host = "0.0.0.0" if os.environ.get("PORT") else "127.0.0.1"
+    uvicorn.run("server:app", host=host, port=port, reload=False)

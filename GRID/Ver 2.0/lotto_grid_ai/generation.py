@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import heapq
 import itertools
-from math import comb
+from math import comb, exp
 from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 import numpy as np
@@ -64,6 +64,22 @@ def filter_by_consecutive(combination: Sequence[int]) -> bool:
         else:
             current_run = 1
     return True
+
+
+def filter_by_zone_diversity(combination: Sequence[int]) -> bool:
+    # 구간 다양성 필터: 6개 번호가 최소 3개 이상의 구간에서 선택되어야 합니다.
+    # 구간: 1-9, 10-19, 20-29, 30-39, 40-45
+    numbers = _normalized_combination(combination)
+    if not numbers:
+        return False
+    zones: set = set()
+    for n in numbers:
+        if n <= 9:    zones.add(0)
+        elif n <= 19: zones.add(1)
+        elif n <= 29: zones.add(2)
+        elif n <= 39: zones.add(3)
+        else:         zones.add(4)
+    return len(zones) >= 3
 
 
 def _normalized_combination(combination: Sequence[int]) -> Tuple[int, ...]:
@@ -361,6 +377,7 @@ class CombinationGenerator:
                 filter_by_odd_even(combo),
                 filter_by_high_low(combo),
                 filter_by_consecutive(combo),
+                filter_by_zone_diversity(combo),
             )
         )
         return (
@@ -404,7 +421,8 @@ class CombinationGenerator:
     ) -> float:
         score_sum = sum(score_map.get(n, 0.0) for n in combo)
         ideal_sum = (config.sum_min + config.sum_max) / 2.0
-        balance_bonus = max(0.0, 20.0 - abs(metrics["total"] - ideal_sum)) * 0.35
+        sigma = max(1.0, (config.sum_max - config.sum_min) / 4.0)
+        balance_bonus = 20.0 * exp(-0.5 * ((metrics["total"] - ideal_sum) / sigma) ** 2)
         ac_bonus = metrics["ac_value"] * 1.3
         carry_bonus = carry_count * 0.7
         pattern_penalty = pattern_risk * 12.0

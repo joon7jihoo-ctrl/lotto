@@ -24,11 +24,18 @@ class LottoAnalyzer:
     """로또 번호 히스토리에서 점수, 후보군, 무작위 대비 백테스트 요약을 산출합니다."""
 
     RECENT_WINDOWS: Tuple[Tuple[int, float], ...] = (
-        (5, 0.35),
-        (10, 0.25),
-        (20, 0.20),
-        (50, 0.12),
-        (100, 0.08),
+        (5,   0.20),  # 단기 노이즈 비중 축소
+        (10,  0.25),
+        (20,  0.25),  # 중기 안정 패턴 강화
+        (50,  0.18),
+        (100, 0.12),
+    )
+
+    ZONE_RANGES: Tuple[Tuple[int, int], ...] = (
+        (1, 9), (10, 19), (20, 29), (30, 39), (40, 45)
+    )
+    ZONE_IDEAL_RATIO: Tuple[float, ...] = (
+        9/45, 10/45, 10/45, 10/45, 6/45
     )
 
     def analyze(
@@ -88,6 +95,7 @@ class LottoAnalyzer:
     ) -> Tuple[pd.DataFrame, Set[int], Set[int]]:
         freq_score, freq_counts = self._layer2_frequency_score(df)
         missing_score, missing_gap = self._layer2_missing_score(df)
+        zone_score = self._layer2c_zone_balance_score(df)
         square_score, prev_square_numbers, square_hit_count = self._layer3_previous_square(latest_numbers)
         deadzone_score, deadzone_numbers, deadzone_recent_counts = self._layer4_deadzone(
             df, config.deadzone_window
@@ -97,6 +105,7 @@ class LottoAnalyzer:
             missing_score=missing_score,
             square_score=square_score,
             deadzone_score=deadzone_score,
+            zone_score=zone_score,
             config=config,
         )
         table = self._build_score_table(
@@ -184,21 +193,62 @@ class LottoAnalyzer:
     def _layer2_missing_score(self, df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
         """
         장기 미출수:
-        - 각 번호의 마지막 출현 회차를 추적
+        - 각 번호의 마지막 출현 회차를 추적 (벡터화)
         - 최신 회차와의 차이를 missing_gap으로 계산
         - 오래 나오지 않은 번호일수록 높은 점수
         """
         latest_draw_no = int(df["draw_no"].max())
-        first_draw_no = int(df["draw_no"].min())
-        last_seen = np.full(NUMBER_MAX, first_draw_no - 1, dtype=int)
+        first_draw_no  = int(df["draw_no"].min())
+        last_seen      = np.full(NUMBER_MAX, first_draw_no - 1, dtype=int)
 
-        for _, row in df.iterrows():
-            draw_no = int(row["draw_no"])
-            for number in self._row_numbers(row):
-                last_seen[number - 1] = draw_no
+        draw_no_arr = df["draw_no"].astype(int).values
+        for col in ("n1", "n2", "n3", "n4", "n5", "n6"):
+            if col not in df.columns:
+                continue
+            num_arr   = df[col].fillna(0).astype(int).values
+            valid_m   = (num_arr >= NUMBER_MIN) & (num_arr <= NUMBER_MAX)
+            nums      = num_arr[valid_m]
+            dns       = draw_no_arr[valid_m]
+            for n in np.unique(nums):
+                last_seen[n - 1] = max(last_seen[n - 1], int(dns[nums == n].max()))
 
         missing_gap = latest_draw_no - last_seen
         return self._minmax(missing_gap), missing_gap
+
+    # -----------------------------
+    # Layer 2-C: 구간 분포 균형 분석
+    # -----------------------------
+    def _layer2c_zone_balance_score(self, df: pd.DataFrame) -> np.ndarray:
+        """
+        구간별 출현 분포 분석:
+        최근 30회에서 1-9 / 10-19 / 20-29 / 30-39 / 40-45 구간의
+        이상적 비율 대비 과소 출현 구간 번호에 높은 점수 부여.
+        역대 로또에서 구간 다양성이 높은 조합이 통계적으로 유리.
+        """
+        recent = df.tail(min(30, len(df)))
+        zone_counts = np.zeros(5, dtype=float)
+
+        for _, row in recent.iterrows():
+            for n in self._row_numbers(row):
+                for i, (lo, hi) in enumerate(self.ZONE_RANGES):
+                    if lo <= n <= hi:
+                        zone_counts[i] += 1.0
+                        break
+
+        total = zone_counts.sum()
+        if total == 0:
+            return np.zeros(NUMBER_MAX, dtype=float)
+
+        zone_ratios = zone_counts / total
+        ideal       = np.array(self.ZONE_IDEAL_RATIO, dtype=float)
+        deficit     = np.maximum(0.0, ideal - zone_ratios)
+
+        score = np.zeros(NUMBER_MAX, dtype=float)
+        for i, (lo, hi) in enumerate(self.ZONE_RANGES):
+            for n in range(lo, min(hi, NUMBER_MAX) + 1):
+                score[n - 1] = deficit[i]
+
+        return self._minmax(score)
 
     # -----------------------------
     # Layer 3: 직전사각수 알고리즘
@@ -234,19 +284,18 @@ class LottoAnalyzer:
         window: int,
     ) -> Tuple[np.ndarray, Set[int], np.ndarray]:
         """
-        최근 N회차 동안 7x7 공간에서 출현 빈도가 0인 번호를 감지합니다.
+        최근 N회차 동안 출현 빈도가 낮은 번호를 감지합니다.
 
-        이 구현에서는 번호 단위의 deadzone을 사용합니다.
-        즉, 최근 N회차 전체에서 한 번도 나오지 않은 번호를 완전사각/소외 구역으로 표시합니다.
+        소프트 점수: 0회=1.0, 1회≈0.67, 2회≈0.33, 3회 이상=0
+        deadzone_numbers(바이너리)는 히트맵 오버레이 표시에 계속 사용.
         """
         window = int(np.clip(window, 1, max(1, len(df))))
         recent = df.tail(window)
         counts = self._count_numbers(recent).astype(int)
 
         deadzone_numbers = {n for n in range(1, NUMBER_MAX + 1) if counts[n - 1] == 0}
-        score = np.zeros(NUMBER_MAX, dtype=float)
-        for n in deadzone_numbers:
-            score[n - 1] = 1.0
+        # 0회=1.0, 1회=0.67, 2회=0.33, 3회↑=0  (소프트 점수)
+        score = np.maximum(0.0, 1.0 - counts.astype(float) / 3.0)
 
         return score, deadzone_numbers, counts
 
@@ -259,10 +308,11 @@ class LottoAnalyzer:
         missing_score: np.ndarray,
         square_score: np.ndarray,
         deadzone_score: np.ndarray,
+        zone_score: np.ndarray,
         config: AnalysisConfig,
     ) -> np.ndarray:
         """
-        Layer 2~4에서 나온 서로 다른 성격의 점수를 하나의 0~100 점수로 합성합니다.
+        Layer 2~4 + 2-C(구간분포)에서 나온 서로 다른 성격의 점수를 0~100 점수로 합성합니다.
 
         가중치가 모두 0이면 모든 레이어를 균등 가중치로 처리해 빈 결과를 방지합니다.
         """
@@ -272,6 +322,7 @@ class LottoAnalyzer:
                 max(0, config.missing_weight),
                 max(0, config.square_weight),
                 max(0, config.deadzone_weight),
+                max(0, getattr(config, "zone_weight", 10)),
             ],
             dtype=float,
         )
@@ -281,10 +332,11 @@ class LottoAnalyzer:
 
         weights = weights / weights.sum()
         raw = (
-            freq_score * weights[0]
-            + missing_score * weights[1]
-            + square_score * weights[2]
+            freq_score  * weights[0]
+            + missing_score  * weights[1]
+            + square_score   * weights[2]
             + deadzone_score * weights[3]
+            + zone_score     * weights[4]
         )
 
         return self._minmax(raw) * 100.0
@@ -391,6 +443,7 @@ class LottoAnalyzer:
         latest_numbers = self._row_numbers(train.iloc[-1])
         freq_score, freq_counts = self._layer2_frequency_score(train)
         missing_score, _missing_gap = self._layer2_missing_score(train)
+        zone_score = self._layer2c_zone_balance_score(train)
         square_score, _prev_square_numbers, _square_hit_count = self._layer3_previous_square(latest_numbers)
         deadzone_score, _deadzone_numbers, _deadzone_recent_counts = self._layer4_deadzone(
             train, config.deadzone_window
@@ -400,6 +453,7 @@ class LottoAnalyzer:
             missing_score=missing_score,
             square_score=square_score,
             deadzone_score=deadzone_score,
+            zone_score=zone_score,
             config=config,
         )
         numbers = np.arange(1, NUMBER_MAX + 1)
@@ -447,11 +501,12 @@ class LottoAnalyzer:
         counts = np.zeros(NUMBER_MAX, dtype=float)
         if df is None or df.empty:
             return counts
-
-        for _, row in df.iterrows():
-            for number in cls._row_numbers(row):
-                counts[number - 1] += 1.0
-
+        for col in ("n1", "n2", "n3", "n4", "n5", "n6"):
+            if col not in df.columns:
+                continue
+            arr = df[col].dropna().astype(int).values
+            valid = arr[(arr >= NUMBER_MIN) & (arr <= NUMBER_MAX)]
+            np.add.at(counts, valid - 1, 1.0)
         return counts
 
     @staticmethod

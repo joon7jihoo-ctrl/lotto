@@ -29,10 +29,11 @@ class AnalysisConfig:
     output_limit: int = 30
 
     # Layer 5: 종합 가중치 매트릭스용 가중치
-    recent_weight: int = 55
+    recent_weight: int = 45
     missing_weight: int = 25
     square_weight: int = 0
-    deadzone_weight: int = 5
+    deadzone_weight: int = 10
+    zone_weight: int = 10      # 구간 분포 균형 가중치 (Layer 2-C)
 
     # Layer 7: 직전 회차 이월수 + 예상수 믹스 비율
     mix_previous_ratio: int = 10

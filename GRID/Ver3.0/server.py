@@ -46,7 +46,8 @@ class ConfigRequest(BaseModel):
     recent_weight: int = 55
     missing_weight: int = 25
     square_weight: int = 0
-    deadzone_weight: int = 5
+    deadzone_weight: int = 10
+    zone_weight: int = 10
     mix_previous_ratio: int = 10
     max_overlap: int = 4
     max_popularity_risk: int = 3

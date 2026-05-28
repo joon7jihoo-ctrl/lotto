@@ -46,11 +46,13 @@ html,body{
 .draw-select-wrap{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
 .draw-select-lbl{font-size:11px;color:#aaa;font-weight:600;text-align:center;letter-spacing:.3px}
 .draw-sel{
-  height:58px;width:172px;padding:0 10px;
+  height:58px;width:172px;padding:0 12px;
   border:1.5px solid #e8e8e8;border-radius:10px;
-  font-size:13px;font-weight:600;color:#333;
+  font-size:15px;font-weight:700;color:#333;
   background:#fafafa;cursor:pointer;
   font-family:inherit;
+  text-align:right;
+  text-align-last:right;
 }
 .draw-sel:focus{outline:none;border-color:#e52748;background:#fff}
 #btn-predict{
@@ -308,7 +310,7 @@ html,body{
 @media(max-width:899px){
   .page-wrap{padding:16px 16px 48px;gap:14px}
   .btn-card{padding:12px 16px;border-radius:12px;max-width:680px}
-  .draw-sel{height:50px;width:148px;font-size:12px}
+  .draw-sel{height:50px;width:148px;font-size:14px}
   #btn-predict{font-size:16px;height:50px;padding:0 10px}
   .cards-wrap{flex-direction:column;gap:14px;max-width:680px;align-items:stretch}
   .card{padding:28px 28px 34px;border-radius:18px}
@@ -341,7 +343,7 @@ html,body{
   .btn-card{padding:10px 12px;border-radius:12px;max-width:100%}
   .btn-row{flex-wrap:wrap;gap:8px}
   .draw-select-wrap{flex:1;min-width:calc(50% - 4px)}
-  .draw-sel{width:100%;height:44px;font-size:12px}
+  .draw-sel{width:100%;height:44px;font-size:14px}
   #btn-predict{font-size:15px;height:46px;padding:0;flex:none;width:100%}
   .cards-wrap{flex-direction:column;gap:10px;max-width:100%;align-items:stretch}
   .card{padding:22px 20px 26px;border-radius:16px}
@@ -456,7 +458,7 @@ html,body{
       <div class="draw-select-wrap">
         <span class="draw-select-lbl">시작회차</span>
         <select id="sel-start" class="draw-sel">
-          <option value="1">1</option>
+          <option value="1">전체</option>
         </select>
       </div>
       <div class="draw-select-wrap">
@@ -630,7 +632,7 @@ function populateDropdowns(latestNo) {
   if (!selStart || !selEnd) return;
 
   // 시작회차 옵션 생성
-  const startOpts = [{ label: `1`, value: 1 }];
+  const startOpts = [{ label: `전체`, value: 1 }];
   for (const cnt of [1000, 500, 200, 100, 50]) {
     const from = latestNo - cnt + 1;
     if (from > 1) startOpts.push({ label: `${from}`, value: from });

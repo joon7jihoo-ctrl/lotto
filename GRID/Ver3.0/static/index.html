@@ -57,8 +57,8 @@ html,body{
 
 /* ── 카드 컨테이너 ── */
 .cards-wrap{
-  width:100%;max-width:860px;
-  display:flex;gap:12px;align-items:flex-start;
+  width:100%;max-width:880px;
+  display:flex;gap:14px;align-items:stretch;
 }
 
 /* ── 공통 카드 ── */
@@ -68,6 +68,11 @@ html,body{
   box-shadow:0 4px 20px rgba(0,0,0,.13);
   padding:24px 24px 28px;
   flex:1;min-width:0;
+  display:flex;flex-direction:column;
+}
+/* 우측 카드: 내용 수직 중앙 정렬 */
+.card-result{
+  justify-content:center;
 }
 
 /* ── 좌측 카드 ── */
@@ -380,7 +385,7 @@ html,body{
   <div class="cards-wrap">
 
     <!-- 좌측: 다음 회차 -->
-    <div class="card">
+    <div class="card card-upcoming">
       <div class="price-tag">1,000원 / 1게임</div>
       <div class="logo-wrap">
         <img src="/static/lotto-logo.svg" alt="Lotto 6/45"
@@ -415,7 +420,7 @@ html,body{
     </div>
 
     <!-- 우측: 최근 추첨 결과 -->
-    <div class="card">
+    <div class="card card-result">
       <div class="result-header-label">최근 추첨 결과</div>
       <div class="result-round-text" id="latest-round-no">제 — 회</div>
       <div class="result-date-text" id="latest-date">—</div>

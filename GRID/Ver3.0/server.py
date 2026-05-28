@@ -63,7 +63,7 @@ def _db_max_draw_no() -> int:
 
 
 def _init_db():
-    """lotto_draws 테이블이 없으면 생성."""
+    """lotto_draws / generated_predictions 테이블이 없으면 생성."""
     conn = sqlite3.connect(str(DB_PATH))
     conn.execute("""
         CREATE TABLE IF NOT EXISTS lotto_draws (
@@ -73,6 +73,20 @@ def _init_db():
             n4         INTEGER, n5 INTEGER, n6 INTEGER,
             bonus      INTEGER,
             updated_at TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS generated_predictions (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            saved_at   TEXT NOT NULL,
+            target_no  INTEGER NOT NULL,
+            rank       INTEGER NOT NULL,
+            n1 INTEGER, n2 INTEGER, n3 INTEGER,
+            n4 INTEGER, n5 INTEGER, n6 INTEGER,
+            score      REAL,
+            start_draw INTEGER,
+            end_draw   INTEGER
         )
     """)
     conn.commit()
@@ -447,11 +461,35 @@ def generate(req: ConfigRequest):
             }
             for i, r in enumerate(records)
         ]
+
+        # ── 예상 번호 자동 저장 ──────────────────────────────────────────────────
+        try:
+            _init_db()
+            now_str   = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+            target_no = result.latest_draw.draw_no + 1
+            conn = sqlite3.connect(str(DB_PATH))
+            for combo in combos:
+                nums = combo["numbers"]
+                conn.execute("""
+                    INSERT INTO generated_predictions
+                        (session_id, saved_at, target_no, rank,
+                         n1, n2, n3, n4, n5, n6, score, start_draw, end_draw)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                """, (
+                    now_str, now_str, target_no, combo["rank"],
+                    nums[0], nums[1], nums[2], nums[3], nums[4], nums[5],
+                    combo["score"], req.start_draw, req.max_draw,
+                ))
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass  # 저장 실패해도 생성 결과는 정상 반환
+
         return {
-            "status":           "ok",
-            "combinations":     combos,
-            "warnings":         gen_warns,
-            "data":             _serialize_result(result),
+            "status":       "ok",
+            "combinations": combos,
+            "warnings":     gen_warns,
+            "data":         _serialize_result(result),
         }
     except Exception as exc:
         import traceback
@@ -459,6 +497,93 @@ def generate(req: ConfigRequest):
             {"status": "error", "message": str(exc), "trace": traceback.format_exc()},
             status_code=500,
         )
+
+
+# ── 내 번호 이력 ──────────────────────────────────────────────────────────────
+@app.get("/api/my_history")
+def my_history():
+    """저장된 예상 번호 이력 + 실제 추첨 결과 비교."""
+    try:
+        _init_db()
+        conn  = sqlite3.connect(str(DB_PATH))
+        preds = conn.execute("""
+            SELECT id, session_id, saved_at, target_no, rank,
+                   n1, n2, n3, n4, n5, n6, score, start_draw, end_draw
+            FROM generated_predictions
+            ORDER BY saved_at DESC
+        """).fetchall()
+
+        history = []
+        for row in preds:
+            (rid, session_id, saved_at, target_no, rank,
+             n1, n2, n3, n4, n5, n6, score, start_draw, end_draw) = row
+            numbers = [n1, n2, n3, n4, n5, n6]
+
+            # 실제 추첨 결과 비교
+            actual = conn.execute(
+                "SELECT n1,n2,n3,n4,n5,n6,bonus FROM lotto_draws WHERE draw_no=?",
+                (target_no,)
+            ).fetchone()
+
+            match_count   = None
+            bonus_match   = False
+            actual_numbers = None
+            actual_bonus  = None
+            if actual:
+                actual_numbers = list(actual[:6])
+                actual_bonus   = actual[6]
+                match_count    = len(set(numbers) & set(actual_numbers))
+                bonus_match    = bool(actual_bonus and actual_bonus in numbers)
+
+            history.append({
+                "id":             rid,
+                "session_id":     session_id,
+                "saved_at":       saved_at,
+                "target_no":      target_no,
+                "rank":           rank,
+                "numbers":        numbers,
+                "score":          score,
+                "start_draw":     start_draw,
+                "end_draw":       end_draw,
+                "match_count":    match_count,
+                "bonus_match":    bonus_match,
+                "actual_numbers": actual_numbers,
+                "actual_bonus":   actual_bonus,
+            })
+        conn.close()
+        return {"status": "ok", "history": history}
+    except Exception as exc:
+        import traceback
+        return JSONResponse(
+            {"status": "error", "message": str(exc), "trace": traceback.format_exc()},
+            status_code=500,
+        )
+
+
+@app.delete("/api/my_history/session/{session_id:path}")
+def delete_session(session_id: str):
+    """특정 세션(한 번의 생성 묶음) 전체 삭제."""
+    try:
+        conn = sqlite3.connect(str(DB_PATH))
+        conn.execute("DELETE FROM generated_predictions WHERE session_id=?", (session_id,))
+        conn.commit()
+        conn.close()
+        return {"status": "ok"}
+    except Exception as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=500)
+
+
+@app.delete("/api/my_history")
+def clear_all_history():
+    """전체 이력 삭제."""
+    try:
+        conn = sqlite3.connect(str(DB_PATH))
+        conn.execute("DELETE FROM generated_predictions")
+        conn.commit()
+        conn.close()
+        return {"status": "ok"}
+    except Exception as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=500)
 
 
 if __name__ == "__main__":

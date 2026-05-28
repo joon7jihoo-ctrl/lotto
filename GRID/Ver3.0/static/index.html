@@ -177,15 +177,22 @@ html,body{
   margin-bottom:14px;
 }
 .ball{
-  width:72px;height:72px;border-radius:50%;
+  /* 데스크탑 2열 레이아웃에서 카드 너비에 맞게 자동 축소
+     (50vw - 190px) / 7 = (뷰포트 절반 - 패딩/갭/플러스기호) ÷ 볼7개
+     ※ 태블릿·모바일 미디어쿼리에서 고정 크기로 덮어씀 */
+  width: min(62px, calc((50vw - 190px) / 7));
+  height: min(62px, calc((50vw - 190px) / 7));
+  border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:22px;font-weight:800;color:#fff;
+  font-size: min(20px, calc((50vw - 190px) / 7 * 0.35));
+  font-weight:800;color:#fff;
   box-shadow:0 3px 10px rgba(0,0,0,.20);
   flex-shrink:0;
   text-shadow:0 1px 3px rgba(0,0,0,.22);
 }
 .plus-sign{
-  font-size:26px;color:#ddd;
+  font-size: min(26px, calc((50vw - 190px) / 7 * 0.48));
+  color:#ddd;
   font-weight:300;margin:0 2px;flex-shrink:0;
 }
 

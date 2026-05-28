@@ -784,7 +784,7 @@ async function onPredictClick() {
     ov.classList.remove('show');
     btn.disabled = false;
     if (json.status !== 'ok') { alert('오류: ' + (json.message || '서버 오류')); return; }
-    renderPopup(json);
+    renderPopup(json, startDraw, maxDraw);
   } catch(e) {
     ov.classList.remove('show');
     btn.disabled = false;
@@ -793,12 +793,15 @@ async function onPredictClick() {
 }
 
 // ── 팝업 렌더링 (순위 / 번호 / 총점) ─────────────────────
-function renderPopup(json) {
-  const combos = json.combinations || [];
-  const data   = json.data || {};
+function renderPopup(json, startDraw, maxDraw) {
+  const combos   = json.combinations || [];
+  const data     = json.data || {};
+  const nextNo   = (data.latest_draw_no || 0) + 1;
+  const endNo    = (maxDraw && maxDraw > 0) ? maxDraw : (data.latest_draw_no || 0);
+  const startNo  = startDraw || 1;
 
   document.getElementById('popup-info').textContent = data.latest_draw_no
-    ? `제${data.latest_draw_no + 1}회 예상 번호 · ${(data.total_draws || 0).toLocaleString()}회차 분석`
+    ? `제${nextNo}회 예상 번호 : ${startNo}회~${endNo}회 분석`
     : '';
 
   const tbody = document.getElementById('combo-tbody');

@@ -302,6 +302,87 @@ html,body{
 .ball-xs{width:72px;height:72px;font-size:22px}
 .td-score{font-size:17px;font-weight:700;color:#333;width:70px}
 
+/* ── 팝업 탭 ── */
+.popup-tabs{
+  display:flex;
+  margin:0 -20px 0;
+  padding:0 20px;
+  border-bottom:2px solid #f0f0f0;
+}
+.ptab{
+  flex:1;padding:10px 0;
+  background:none;border:none;
+  border-bottom:2.5px solid transparent;
+  margin-bottom:-2px;
+  font-size:13px;font-weight:600;color:#ccc;
+  cursor:pointer;font-family:inherit;
+  transition:color .15s;letter-spacing:-.2px;
+}
+.ptab:hover{color:#999}
+.ptab.active{color:#e52748;border-bottom-color:#e52748}
+.ptab-pane{padding-top:4px}
+
+/* ── 히트맵 ── */
+.heatmap-wrap{padding:10px 0 4px}
+.heatmap-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:5px;
+  max-width:392px;
+  margin:0 auto 14px;
+}
+.hm-cell{
+  aspect-ratio:1;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;
+  cursor:default;
+  transition:transform .1s;
+  line-height:1;
+}
+.hm-cell:not(.hm-empty):hover{transform:scale(1.12);z-index:1}
+.hm-empty{background:transparent}
+.heatmap-legend{
+  display:flex;align-items:center;
+  justify-content:center;gap:8px;
+  font-size:11px;color:#bbb;margin-bottom:10px;
+}
+.hm-leg-bar{
+  width:90px;height:8px;border-radius:4px;
+  background:linear-gradient(to right,hsl(349,30%,93%),hsl(349,76%,42%));
+}
+.hm-leg-lbl{font-size:10px}
+
+/* ── 점수표 ── */
+.score-tbl-wrap{
+  max-height:340px;overflow-y:auto;
+  margin-bottom:8px;
+}
+.score-tbl{width:100%;border-collapse:collapse}
+.score-tbl th{
+  font-size:11px;color:#999;font-weight:600;
+  padding:7px 4px;text-align:center;
+  border-bottom:1px solid #efefef;
+  position:sticky;top:0;background:#fff;z-index:1;
+}
+.score-tbl td{
+  padding:7px 4px;text-align:center;
+  border-bottom:1px solid #f7f7f7;
+  font-size:12px;vertical-align:middle;
+}
+.score-tbl tr:last-child td{border-bottom:none}
+.st-num-cell{display:flex;align-items:center;justify-content:center}
+.st-score-hi{font-weight:800;color:#e52748}
+.st-score-md{font-weight:700;color:#333}
+.st-score-lo{color:#bbb}
+.st-badge{
+  font-size:9px;font-weight:700;
+  padding:2px 5px;border-radius:4px;
+  white-space:nowrap;display:inline-block;
+}
+.st-latest{background:#fff4e5;color:#e99722}
+.st-dead{background:#f5f5f5;color:#bbb}
+.st-prev{background:#f0f0ff;color:#888}
+
 .popup-save-wrap{
   text-align:center;
   margin:16px 0 8px;
@@ -622,22 +703,48 @@ html,body{
       <button class="popup-close-btn" onclick="closePopupBtn()">&#x2715;</button>
     </div>
     <p class="popup-info" id="popup-info"></p>
-    <table class="combo-tbl">
-      <thead>
-        <tr>
-          <th>순위</th>
-          <th>번호</th>
-          <th>총점</th>
-        </tr>
-      </thead>
-      <tbody id="combo-tbody"></tbody>
-    </table>
-    <div class="popup-save-wrap">
-      <button class="popup-save-btn" id="popup-save-btn" onclick="saveCurrentPrediction()">
-        이력에 저장하기
-      </button>
+
+    <!-- 탭 바 -->
+    <div class="popup-tabs">
+      <button class="ptab active" id="ptab-btn-combos"  onclick="switchPopupTab('combos')">번호 조합</button>
+      <button class="ptab"        id="ptab-btn-heatmap" onclick="switchPopupTab('heatmap')">히트맵</button>
+      <button class="ptab"        id="ptab-btn-scores"  onclick="switchPopupTab('scores')">점수표</button>
     </div>
-    <p class="popup-note">※ AI 분석 결과는 참고용이며 당첨을 보장하지 않습니다</p>
+
+    <!-- 탭 1: 번호 조합 -->
+    <div class="ptab-pane" id="ptab-combos">
+      <table class="combo-tbl">
+        <thead>
+          <tr><th>순위</th><th>번호</th><th>총점</th></tr>
+        </thead>
+        <tbody id="combo-tbody"></tbody>
+      </table>
+      <div class="popup-save-wrap">
+        <button class="popup-save-btn" id="popup-save-btn" onclick="saveCurrentPrediction()">
+          이력에 저장하기
+        </button>
+      </div>
+      <p class="popup-note">※ AI 분석 결과는 참고용이며 당첨을 보장하지 않습니다</p>
+    </div>
+
+    <!-- 탭 2: 히트맵 -->
+    <div class="ptab-pane" id="ptab-heatmap" style="display:none">
+      <div class="heatmap-wrap">
+        <div class="heatmap-grid" id="heatmap-grid"></div>
+        <div class="heatmap-legend">
+          <span class="hm-leg-lbl">낮음</span>
+          <div class="hm-leg-bar"></div>
+          <span class="hm-leg-lbl">높음</span>
+        </div>
+      </div>
+      <p class="popup-note">※ 각 번호의 AI 예측 점수를 색상으로 표현 (진할수록 점수 높음)</p>
+    </div>
+
+    <!-- 탭 3: 점수표 -->
+    <div class="ptab-pane" id="ptab-scores" style="display:none">
+      <div class="score-tbl-wrap" id="score-tbl-wrap"></div>
+      <p class="popup-note">※ AI 분석 결과는 참고용이며 당첨을 보장하지 않습니다</p>
+    </div>
   </div>
 </div>
 
@@ -980,8 +1087,9 @@ async function onPredictClick() {
   }
 }
 
-// ── 현재 팝업 데이터 (수동 저장용) ───────────────────────
+// ── 현재 팝업 데이터 (수동 저장 + 분석 탭용) ─────────────
 let _currentPrediction = null;
+let _currentAnalysis   = null;  // { heatmap_cells, score_table }
 
 // ── 팝업 렌더링 (순위 / 번호 / 총점) ─────────────────────
 function renderPopup(json, startDraw, maxDraw) {
@@ -1020,6 +1128,12 @@ function renderPopup(json, startDraw, maxDraw) {
     })),
   };
 
+  // 분석 탭용 데이터 보관
+  _currentAnalysis = {
+    heatmap_cells: data.heatmap_cells || [],
+    score_table:   data.score_table   || [],
+  };
+
   // 저장 버튼 초기화
   const saveBtn = document.getElementById('popup-save-btn');
   if (saveBtn) {
@@ -1028,7 +1142,107 @@ function renderPopup(json, startDraw, maxDraw) {
     saveBtn.className   = 'popup-save-btn';
   }
 
+  // 탭을 번호 조합으로 초기화
+  switchPopupTab('combos');
+
   document.getElementById('result-popup').classList.add('show');
+}
+
+// ── 팝업 탭 전환 ─────────────────────────────────────────
+function switchPopupTab(tab) {
+  ['combos', 'heatmap', 'scores'].forEach(t => {
+    const btn  = document.getElementById('ptab-btn-' + t);
+    const pane = document.getElementById('ptab-' + t);
+    if (btn)  btn.classList.toggle('active', t === tab);
+    if (pane) pane.style.display = (t === tab) ? '' : 'none';
+  });
+  if (tab === 'heatmap') renderHeatmap();
+  if (tab === 'scores')  renderScoreTable();
+}
+
+// ── 히트맵 렌더링 ─────────────────────────────────────────
+function renderHeatmap() {
+  const cells = _currentAnalysis?.heatmap_cells || [];
+  const grid  = document.getElementById('heatmap-grid');
+  if (!cells.length || !grid) return;
+
+  // 7×7 매트릭스 구성
+  const matrix = Array.from({ length: 7 }, () => Array(7).fill(null));
+  cells.forEach(c => {
+    if (c.row >= 0 && c.row < 7 && c.col >= 0 && c.col < 7) {
+      matrix[c.row][c.col] = c;
+    }
+  });
+
+  // 점수 범위 정규화
+  const scores = cells.map(c => c.score);
+  const minS   = Math.min(...scores);
+  const maxS   = Math.max(...scores);
+  const range  = maxS - minS || 1;
+
+  function cellBg(score) {
+    const t = (score - minS) / range;                 // 0 ~ 1
+    const L = Math.round(93 - t * 51);                // 93% ~ 42%
+    const S = Math.round(28 + t * 48);                // 28% ~ 76%
+    return `hsl(349,${S}%,${L}%)`;
+  }
+  function cellFg(score) {
+    return (score - minS) / range > 0.55 ? '#fff' : '#c44';
+  }
+
+  let html = '';
+  for (let r = 0; r < 7; r++) {
+    for (let c = 0; c < 7; c++) {
+      const cell = matrix[r][c];
+      if (!cell) {
+        html += `<div class="hm-cell hm-empty"></div>`;
+      } else {
+        const bg = cellBg(cell.score);
+        const fg = cellFg(cell.score);
+        html += `<div class="hm-cell" style="background:${bg};color:${fg}"
+          title="${cell.number}번  점수: ${cell.score.toFixed(1)}">${cell.number}</div>`;
+      }
+    }
+  }
+  grid.innerHTML = html;
+}
+
+// ── 점수표 렌더링 ─────────────────────────────────────────
+function renderScoreTable() {
+  const rows = _currentAnalysis?.score_table || [];
+  const wrap = document.getElementById('score-tbl-wrap');
+  if (!rows.length || !wrap) return;
+
+  // 점수 내림차순 정렬
+  const sorted = [...rows].sort((a, b) => b.score - a.score);
+
+  const trs = sorted.map((r, i) => {
+    const sc = i < 9  ? 'st-score-hi'
+             : i < 25 ? 'st-score-md'
+             :           'st-score-lo';
+    const bc = ballClass(r.number, false);
+    let badges = '';
+    if (r.is_latest)      badges += `<span class="st-badge st-latest">최신</span> `;
+    if (r.is_deadzone)    badges += `<span class="st-badge st-dead">데드존</span> `;
+    if (r.is_prev_square) badges += `<span class="st-badge st-prev">패턴</span>`;
+    return `
+      <tr>
+        <td><div class="st-num-cell"><div class="ball-sm ${bc}">${r.number}</div></div></td>
+        <td class="${sc}">${r.score.toFixed(1)}</td>
+        <td>${r.missing_gap}</td>
+        <td>${badges || '—'}</td>
+      </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <table class="score-tbl">
+      <thead>
+        <tr>
+          <th>번호</th><th>점수</th><th>미출현(회)</th><th>비고</th>
+        </tr>
+      </thead>
+      <tbody>${trs}</tbody>
+    </table>`;
 }
 
 // ── 수동 저장 ─────────────────────────────────────────────
@@ -1066,12 +1280,14 @@ function handlePopupBg(e) {
     document.getElementById('result-popup').classList.remove('show');
     resetDropdowns();
     _currentPrediction = null;
+    _currentAnalysis   = null;
   }
 }
 function closePopupBtn() {
   document.getElementById('result-popup').classList.remove('show');
   resetDropdowns();
   _currentPrediction = null;
+  _currentAnalysis   = null;
 }
 
 // ── 이력 드로어 ───────────────────────────────────────────

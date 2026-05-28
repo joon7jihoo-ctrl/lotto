@@ -56,3 +56,18 @@ Thumbs.db
 .coverage
 htmlcov/
 .tox/
+
+# === 서버 실행 로그 ===
+GRID/Ver3.0/server_out.txt
+GRID/Ver3.0/server_err.txt
+
+# === Claude Code 설정 ===
+.claude/
+
+# === 스크린샷 캡처 도구 ===
+screenshots/node_modules/
+screenshots/package.json
+screenshots/package-lock.json
+screenshots/capture*.py
+screenshots/capture*.js
+screenshots/*.png

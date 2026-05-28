@@ -82,6 +82,16 @@ def filter_by_zone_diversity(combination: Sequence[int]) -> bool:
     return len(zones) >= 3
 
 
+def filter_by_last_digit_diversity(combination: Sequence[int]) -> bool:
+    # 끝자리 다양성 필터: 역대 로또 94%가 끝자리 4개 이상 다름.
+    # 생일수/연속수 패턴과 함께 인기 조합 회피 효과.
+    numbers = _normalized_combination(combination)
+    if not numbers:
+        return False
+    last_digits = {n % 10 for n in numbers}
+    return len(last_digits) >= 4
+
+
 def _normalized_combination(combination: Sequence[int]) -> Tuple[int, ...]:
     # 필터 입력을 정렬된 6개 고유 번호로 정규화합니다. 유효하지 않으면 빈 튜플을 반환합니다.
     try:
@@ -378,6 +388,7 @@ class CombinationGenerator:
                 filter_by_high_low(combo),
                 filter_by_consecutive(combo),
                 filter_by_zone_diversity(combo),
+                filter_by_last_digit_diversity(combo),
             )
         )
         return (

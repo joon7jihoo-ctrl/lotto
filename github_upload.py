@@ -71,6 +71,8 @@ UPLOAD_FILES: list[tuple[Path, str]] = [
     (BASE_DIR / "GRID" / "Ver3.0" / "start.bat",                        "GRID/Ver3.0/start.bat"),
     (BASE_DIR / "GRID" / "Ver3.0" / "render.yaml",                      "GRID/Ver3.0/render.yaml"),
     (BASE_DIR / "GRID" / "Ver3.0" / "static" / "index.html",            "GRID/Ver3.0/static/index.html"),
+    (BASE_DIR / "GRID" / "Ver3.0" / "static" / "favicon.png",           "GRID/Ver3.0/static/favicon.png"),
+    (BASE_DIR / "GRID" / "Ver3.0" / "static" / "lotto-logo.svg",        "GRID/Ver3.0/static/lotto-logo.svg"),
 ]
 
 

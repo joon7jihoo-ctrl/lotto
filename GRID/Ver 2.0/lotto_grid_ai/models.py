@@ -24,25 +24,26 @@ class AnalysisConfig:
 
     start_draw: int = 1
     max_draw: int = 0  # 0이면 자동 최신 회차 탐색
-    deadzone_window: int = 20
+    deadzone_window: int = 25    # 25회로 확대 (통계 유의성 향상)
     top_candidate_count: int = 20
-    output_limit: int = 30
+    output_limit: int = 5        # 기본 5조합
 
     # Layer 5: 종합 가중치 매트릭스용 가중치
-    recent_weight: int = 45
-    missing_weight: int = 25
-    square_weight: int = 0
-    deadzone_weight: int = 10
-    zone_weight: int = 10      # 구간 분포 균형 가중치 (Layer 2-C)
+    # 분석 보고서 최적값: 중기 빈도 > 구간균형/데드존 > 미출수 (도박사의오류 최소화)
+    recent_weight: int = 40      # 중기 시계열 빈도 (최우선)
+    missing_weight: int = 20     # 장기 미출수 (가중치 축소)
+    square_weight: int = 0       # 직전사각수 (통계 근거 없음, 비활성)
+    deadzone_weight: int = 15    # 데드존 (15%로 상향)
+    zone_weight: int = 15        # 구간 분포 균형 (15%로 상향)
 
     # Layer 7: 직전 회차 이월수 + 예상수 믹스 비율
-    mix_previous_ratio: int = 10
+    mix_previous_ratio: int = 5  # 5%로 축소 (예측 중심)
 
     # Layer 8~10: 조합 관리 / 검증 설정
-    max_overlap: int = 4
+    max_overlap: int = 3         # 3개로 축소 (5조합 시 더 다양성)
     max_popularity_risk: int = 3
-    backtest_rounds: int = 80
-    backtest_train_window: int = 120
+    backtest_rounds: int = 100   # 100회로 확대 (통계 신뢰도 향상)
+    backtest_train_window: int = 150
 
     # Layer 8: 수학 검증 필터
     sum_min: int = 100

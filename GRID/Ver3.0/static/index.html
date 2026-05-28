@@ -421,12 +421,175 @@ html,body{
   .sync-bar{padding:7px 12px;font-size:11px}
   .sync-btn{padding:4px 8px;font-size:10px}
 }
+
+/* ── 햄버거 버튼 ── */
+.hamburger-btn{
+  position:fixed;top:16px;right:16px;z-index:300;
+  width:46px;height:46px;
+  border:none;border-radius:50%;
+  background:rgba(255,255,255,.95);
+  box-shadow:0 2px 14px rgba(0,0,0,.22);
+  cursor:pointer;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:5px;
+  padding:0;
+  transition:background .15s,transform .1s;
+}
+.hamburger-btn:hover{background:#fff;transform:scale(1.07)}
+.hamburger-btn span{
+  display:block;width:20px;height:2.5px;
+  background:#e52748;border-radius:2px;
+}
+.hamburger-badge{
+  position:absolute;top:5px;right:5px;
+  background:#e52748;color:#fff;
+  font-size:9px;font-weight:800;
+  border-radius:50%;width:16px;height:16px;
+  display:none;align-items:center;justify-content:center;
+  line-height:1;font-family:inherit;
+  border:1.5px solid #fff;
+}
+.hamburger-badge.show{display:flex}
+
+/* ── 이력 오버레이 / 드로어 ── */
+.history-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.42);z-index:340;
+}
+.history-overlay.open{display:block}
+
+.history-drawer{
+  position:fixed;top:0;right:-420px;
+  width:420px;max-width:100vw;height:100vh;
+  background:#fff;z-index:350;
+  transition:right .3s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;
+  box-shadow:-4px 0 28px rgba(0,0,0,.18);
+}
+.history-drawer.open{right:0}
+
+.history-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 18px 14px;
+  border-bottom:1px solid #f0f0f0;
+  flex-shrink:0;
+}
+.history-title{font-size:16px;font-weight:800;color:#111}
+.history-head-right{display:flex;align-items:center;gap:8px}
+.history-clear-btn{
+  font-size:11px;color:#bbb;
+  background:#f5f5f5;border:none;border-radius:6px;
+  padding:5px 10px;cursor:pointer;white-space:nowrap;
+  font-family:inherit;transition:color .15s,background .15s;
+}
+.history-clear-btn:hover{color:#e52748;background:#fee}
+.history-close-btn{
+  background:#f5f5f5;border:none;border-radius:50%;
+  width:32px;height:32px;font-size:15px;
+  cursor:pointer;display:flex;align-items:center;
+  justify-content:center;color:#888;font-family:inherit;
+}
+.history-close-btn:hover{background:#ebebeb}
+
+.history-body{
+  flex:1;overflow-y:auto;padding:14px 16px 28px;
+}
+.history-empty{
+  text-align:center;color:#ccc;
+  font-size:13px;margin-top:48px;line-height:1.8;
+}
+.history-empty span{font-size:28px;display:block;margin-bottom:6px}
+
+/* 그룹 */
+.history-group{margin-bottom:22px}
+.history-group-header{
+  display:flex;align-items:center;
+  justify-content:space-between;margin-bottom:8px;
+}
+.history-group-title{
+  font-size:13px;font-weight:800;color:#e52748;
+}
+.history-group-meta-wrap{display:flex;align-items:center;gap:8px}
+.history-group-meta{font-size:11px;color:#ccc}
+.history-group-del{
+  background:none;border:none;color:#ddd;
+  cursor:pointer;font-size:13px;padding:2px 4px;
+  line-height:1;font-family:inherit;
+  transition:color .12s;
+}
+.history-group-del:hover{color:#e52748}
+
+/* 아이템 */
+.history-item{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 10px;border-radius:10px;
+  background:#fafafa;margin-bottom:5px;
+}
+.history-rank{
+  font-size:12px;font-weight:700;
+  color:#e52748;width:16px;flex-shrink:0;text-align:center;
+}
+.history-balls{display:flex;gap:3px;flex:1;flex-wrap:nowrap}
+.ball-sm{
+  width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.2);
+  flex-shrink:0;
+}
+.ball-sm.dim{opacity:.28}
+.history-score{
+  font-size:11px;color:#ccc;
+  flex-shrink:0;width:38px;text-align:right;
+}
+/* 매칭 배지 */
+.match-badge{
+  font-size:10px;font-weight:700;
+  padding:3px 7px;border-radius:6px;
+  white-space:nowrap;flex-shrink:0;
+  letter-spacing:-.2px;
+}
+.mb-pending{background:#f5f5f5;color:#bbb}
+.mb-0,.mb-1,.mb-2{background:#f5f5f5;color:#bbb}
+.mb-3{background:#e8f8ee;color:#2dbc6a}   /* 5등 */
+.mb-4{background:#fff4e5;color:#e99722}   /* 4등 */
+.mb-5{background:#fff0f2;color:#e52748}   /* 3등 */
+.mb-2nd{background:#ffeef0;color:#e52748} /* 2등 */
+.mb-1st{background:#fffbe0;color:#c49000;font-size:11px} /* 1등 */
+
+@media(max-width:599px){
+  .history-drawer{width:100vw}
+  .hamburger-btn{top:12px;right:12px;width:42px;height:42px}
+}
 </style>
 </head>
 <body>
 
 <!-- 배경 워터마크 -->
 <div class="bg-wrap" id="bg-nums"></div>
+
+<!-- 햄버거 버튼 -->
+<button class="hamburger-btn" id="hamburger-btn" onclick="openHistory()" title="내 번호 이력">
+  <span></span><span></span><span></span>
+  <div class="hamburger-badge" id="hamburger-badge"></div>
+</button>
+
+<!-- 이력 오버레이 -->
+<div class="history-overlay" id="history-overlay" onclick="closeHistory()"></div>
+
+<!-- 이력 드로어 -->
+<div class="history-drawer" id="history-drawer">
+  <div class="history-head">
+    <span class="history-title">📋 내 번호 이력</span>
+    <div class="history-head-right">
+      <button class="history-clear-btn" onclick="clearAllHistory()">전체 삭제</button>
+      <button class="history-close-btn" onclick="closeHistory()">&#x2715;</button>
+    </div>
+  </div>
+  <div class="history-body" id="history-body">
+    <p class="history-empty"><span>📭</span>아직 저장된 번호가 없습니다<br>예상 번호를 생성하면 자동으로 저장됩니다</p>
+  </div>
+</div>
 
 <!-- 로딩 오버레이 -->
 <div id="loading-overlay">
@@ -788,6 +951,13 @@ async function onPredictClick() {
     btn.disabled = false;
     if (json.status !== 'ok') { alert('오류: ' + (json.message || '서버 오류')); return; }
     renderPopup(json, startDraw, maxDraw);
+    // 자동저장 후 배지 갱신
+    fetch('/api/my_history').then(r => r.json()).then(j => {
+      if (j.status === 'ok') {
+        const sessions = new Set((j.history || []).map(h => h.session_id));
+        _updateBadge(sessions.size);
+      }
+    }).catch(() => {});
   } catch(e) {
     ov.classList.remove('show');
     btn.disabled = false;
@@ -834,9 +1004,135 @@ function closePopupBtn() {
   resetDropdowns();
 }
 
+// ── 이력 드로어 ───────────────────────────────────────────
+function openHistory() {
+  document.getElementById('history-overlay').classList.add('open');
+  document.getElementById('history-drawer').classList.add('open');
+  loadHistory();
+}
+function closeHistory() {
+  document.getElementById('history-overlay').classList.remove('open');
+  document.getElementById('history-drawer').classList.remove('open');
+}
+
+function _matchBadge(matchCount, bonusMatch) {
+  if (matchCount === null) return '<span class="match-badge mb-pending">⏳ 추첨 전</span>';
+  if (matchCount === 6)              return '<span class="match-badge mb-1st">🎉 1등!</span>';
+  if (matchCount === 5 && bonusMatch) return '<span class="match-badge mb-2nd">2등 (5+보너스)</span>';
+  if (matchCount === 5)              return '<span class="match-badge mb-5">3등 (5개)</span>';
+  if (matchCount === 4)              return '<span class="match-badge mb-4">4등 (4개)</span>';
+  if (matchCount === 3)              return '<span class="match-badge mb-3">5등 (3개)</span>';
+  return `<span class="match-badge mb-${matchCount}">${matchCount}개 일치</span>`;
+}
+
+function _ballSmHtml(n, isMatch, hasActual) {
+  const cls = ballClass(n, false);
+  const dim = hasActual && !isMatch ? ' dim' : '';
+  return `<div class="ball-sm ${cls}${dim}">${n}</div>`;
+}
+
+function _updateBadge(count) {
+  const badge = document.getElementById('hamburger-badge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count > 9 ? '9+' : String(count);
+    badge.classList.add('show');
+  } else {
+    badge.classList.remove('show');
+  }
+}
+
+async function loadHistory() {
+  const body = document.getElementById('history-body');
+  body.innerHTML = '<p class="history-empty"><span>⏳</span>불러오는 중…</p>';
+  try {
+    const res  = await fetch('/api/my_history');
+    const json = await res.json();
+    if (json.status !== 'ok' || !json.history.length) {
+      body.innerHTML = '<p class="history-empty"><span>📭</span>아직 저장된 번호가 없습니다<br>예상 번호를 생성하면 자동으로 저장됩니다</p>';
+      _updateBadge(0);
+      return;
+    }
+
+    // session_id 기준으로 그룹핑
+    const groupMap = new Map();
+    json.history.forEach(item => {
+      if (!groupMap.has(item.session_id)) {
+        groupMap.set(item.session_id, {
+          session_id: item.session_id,
+          saved_at:   item.saved_at,
+          target_no:  item.target_no,
+          items:      []
+        });
+      }
+      groupMap.get(item.session_id).items.push(item);
+    });
+
+    const groups = [...groupMap.values()].sort((a, b) => b.saved_at.localeCompare(a.saved_at));
+    _updateBadge(groups.length);
+
+    body.innerHTML = groups.map(group => {
+      const kst   = utcToKST(group.saved_at);
+      const items = group.items.sort((a, b) => a.rank - b.rank);
+
+      const itemsHtml = items.map(item => {
+        const matchedSet  = item.actual_numbers ? new Set(item.actual_numbers) : null;
+        const hasActual   = !!matchedSet;
+        const ballsHtml   = item.numbers.map(n =>
+          _ballSmHtml(n, matchedSet ? matchedSet.has(n) : true, hasActual)
+        ).join('');
+        return `
+          <div class="history-item">
+            <span class="history-rank">${item.rank}</span>
+            <div class="history-balls">${ballsHtml}</div>
+            <span class="history-score">${(item.score || 0).toFixed(1)}</span>
+            <span class="history-match">${_matchBadge(item.match_count, item.bonus_match)}</span>
+          </div>`;
+      }).join('');
+
+      const sid = encodeURIComponent(group.session_id);
+      return `
+        <div class="history-group">
+          <div class="history-group-header">
+            <span class="history-group-title">제${group.target_no}회 예상</span>
+            <div class="history-group-meta-wrap">
+              <span class="history-group-meta">${kst}</span>
+              <button class="history-group-del" onclick="deleteSession('${sid}')" title="이 묶음 삭제">✕</button>
+            </div>
+          </div>
+          ${itemsHtml}
+        </div>`;
+    }).join('');
+  } catch(e) {
+    body.innerHTML = '<p class="history-empty"><span>⚠️</span>불러오기 실패</p>';
+  }
+}
+
+async function deleteSession(encodedId) {
+  try {
+    await fetch(`/api/my_history/session/${encodedId}`, { method: 'DELETE' });
+    loadHistory();
+  } catch(e) {}
+}
+
+async function clearAllHistory() {
+  if (!confirm('저장된 번호 이력을 모두 삭제하시겠습니까?')) return;
+  try {
+    await fetch('/api/my_history', { method: 'DELETE' });
+    loadHistory();
+  } catch(e) {}
+}
+
 // ── 초기 실행 ─────────────────────────────────────────────
 loadInfo();
 pollSyncStatus();  // 즉시 동기화 상태 확인 (서버 시작 시 자동 동기화 중일 수 있음)
+// 배지 초기화
+fetch('/api/my_history').then(r => r.json()).then(json => {
+  if (json.status === 'ok') {
+    const sessions = new Set((json.history || []).map(h => h.session_id));
+    _updateBadge(sessions.size);
+  }
+}).catch(() => {});
 </script>
 </body>
 </html>

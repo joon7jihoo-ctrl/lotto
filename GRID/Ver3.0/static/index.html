@@ -514,9 +514,8 @@ html,body{
 }
 .history-empty{
   text-align:center;color:#ccc;
-  font-size:13px;margin-top:48px;line-height:1.8;
+  font-size:13px;margin-top:48px;line-height:1.9;
 }
-.history-empty span{font-size:28px;display:block;margin-bottom:6px}
 
 /* 그룹 */
 .history-group{margin-bottom:22px}
@@ -598,14 +597,14 @@ html,body{
 <!-- 이력 드로어 -->
 <div class="history-drawer" id="history-drawer">
   <div class="history-head">
-    <span class="history-title">📋 내 번호 이력</span>
+    <span class="history-title">내 번호 이력</span>
     <div class="history-head-right">
       <button class="history-clear-btn" onclick="clearAllHistory()">전체 삭제</button>
       <button class="history-close-btn" onclick="closeHistory()">&#x2715;</button>
     </div>
   </div>
   <div class="history-body" id="history-body">
-    <p class="history-empty"><span>📭</span>아직 저장된 번호가 없습니다<br>예상 번호를 생성하면 자동으로 저장됩니다</p>
+    <p class="history-empty">저장된 번호가 없습니다<br>예상 번호 생성 후 팝업의 '이력에 저장하기'를 눌러주세요</p>
   </div>
 </div>
 
@@ -635,7 +634,7 @@ html,body{
     </table>
     <div class="popup-save-wrap">
       <button class="popup-save-btn" id="popup-save-btn" onclick="saveCurrentPrediction()">
-        📋 이력에 저장하기
+        이력에 저장하기
       </button>
     </div>
     <p class="popup-note">※ AI 분석 결과는 참고용이며 당첨을 보장하지 않습니다</p>
@@ -1024,7 +1023,7 @@ function renderPopup(json, startDraw, maxDraw) {
   // 저장 버튼 초기화
   const saveBtn = document.getElementById('popup-save-btn');
   if (saveBtn) {
-    saveBtn.textContent = '📋 이력에 저장하기';
+    saveBtn.textContent = '이력에 저장하기';
     saveBtn.disabled    = false;
     saveBtn.className   = 'popup-save-btn';
   }
@@ -1046,7 +1045,7 @@ async function saveCurrentPrediction() {
     });
     const json = await res.json();
     if (json.status === 'ok') {
-      if (btn) { btn.textContent = '✅ 저장됨'; btn.className = 'popup-save-btn saved'; }
+      if (btn) { btn.textContent = '저장됨'; btn.className = 'popup-save-btn saved'; }
       // 배지 갱신
       fetch('/api/my_history').then(r => r.json()).then(j => {
         if (j.status === 'ok') {
@@ -1055,10 +1054,10 @@ async function saveCurrentPrediction() {
         }
       }).catch(() => {});
     } else {
-      if (btn) { btn.textContent = '❌ 저장 실패'; btn.className = 'popup-save-btn error'; btn.disabled = false; }
+      if (btn) { btn.textContent = '저장 실패'; btn.className = 'popup-save-btn error'; btn.disabled = false; }
     }
   } catch(e) {
-    if (btn) { btn.textContent = '❌ 저장 실패'; btn.className = 'popup-save-btn error'; btn.disabled = false; }
+    if (btn) { btn.textContent = '저장 실패'; btn.className = 'popup-save-btn error'; btn.disabled = false; }
   }
 }
 
@@ -1087,8 +1086,8 @@ function closeHistory() {
 }
 
 function _matchBadge(matchCount, bonusMatch) {
-  if (matchCount === null) return '<span class="match-badge mb-pending">⏳ 추첨 전</span>';
-  if (matchCount === 6)              return '<span class="match-badge mb-1st">🎉 1등!</span>';
+  if (matchCount === null) return '<span class="match-badge mb-pending">추첨 전</span>';
+  if (matchCount === 6)              return '<span class="match-badge mb-1st">1등!</span>';
   if (matchCount === 5 && bonusMatch) return '<span class="match-badge mb-2nd">2등 (5+보너스)</span>';
   if (matchCount === 5)              return '<span class="match-badge mb-5">3등 (5개)</span>';
   if (matchCount === 4)              return '<span class="match-badge mb-4">4등 (4개)</span>';
@@ -1115,12 +1114,12 @@ function _updateBadge(count) {
 
 async function loadHistory() {
   const body = document.getElementById('history-body');
-  body.innerHTML = '<p class="history-empty"><span>⏳</span>불러오는 중…</p>';
+  body.innerHTML = '<p class="history-empty">불러오는 중…</p>';
   try {
     const res  = await fetch('/api/my_history');
     const json = await res.json();
     if (json.status !== 'ok' || !json.history.length) {
-      body.innerHTML = '<p class="history-empty"><span>📭</span>아직 저장된 번호가 없습니다<br>예상 번호를 생성하면 자동으로 저장됩니다</p>';
+      body.innerHTML = '<p class="history-empty">저장된 번호가 없습니다<br>예상 번호 생성 후 팝업의 \'이력에 저장하기\'를 눌러주세요</p>';
       _updateBadge(0);
       return;
     }
@@ -1175,7 +1174,7 @@ async function loadHistory() {
         </div>`;
     }).join('');
   } catch(e) {
-    body.innerHTML = '<p class="history-empty"><span>⚠️</span>불러오기 실패</p>';
+    body.innerHTML = '<p class="history-empty">불러오기 실패</p>';
   }
 }
 

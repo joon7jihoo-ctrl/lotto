@@ -462,35 +462,50 @@ def generate(req: ConfigRequest):
             for i, r in enumerate(records)
         ]
 
-        # ── 예상 번호 자동 저장 ──────────────────────────────────────────────────
-        try:
-            _init_db()
-            now_str   = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-            target_no = result.latest_draw.draw_no + 1
-            conn = sqlite3.connect(str(DB_PATH))
-            for combo in combos:
-                nums = combo["numbers"]
-                conn.execute("""
-                    INSERT INTO generated_predictions
-                        (session_id, saved_at, target_no, rank,
-                         n1, n2, n3, n4, n5, n6, score, start_draw, end_draw)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-                """, (
-                    now_str, now_str, target_no, combo["rank"],
-                    nums[0], nums[1], nums[2], nums[3], nums[4], nums[5],
-                    combo["score"], req.start_draw, req.max_draw,
-                ))
-            conn.commit()
-            conn.close()
-        except Exception:
-            pass  # 저장 실패해도 생성 결과는 정상 반환
-
         return {
             "status":       "ok",
             "combinations": combos,
             "warnings":     gen_warns,
             "data":         _serialize_result(result),
         }
+    except Exception as exc:
+        import traceback
+        return JSONResponse(
+            {"status": "error", "message": str(exc), "trace": traceback.format_exc()},
+            status_code=500,
+        )
+
+
+# ── 수동 저장 ─────────────────────────────────────────────────────────────────
+class SavePredictionRequest(BaseModel):
+    target_no:    int
+    start_draw:   int
+    end_draw:     int
+    combinations: List[Dict[str, Any]]   # [{rank, numbers, score}, ...]
+
+
+@app.post("/api/save_prediction")
+def save_prediction(req: SavePredictionRequest):
+    """예상 번호를 DB에 저장 (수동 저장)."""
+    try:
+        _init_db()
+        now_str = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        conn    = sqlite3.connect(str(DB_PATH))
+        for combo in req.combinations:
+            nums = combo["numbers"]
+            conn.execute("""
+                INSERT INTO generated_predictions
+                    (session_id, saved_at, target_no, rank,
+                     n1, n2, n3, n4, n5, n6, score, start_draw, end_draw)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """, (
+                now_str, now_str, req.target_no, combo["rank"],
+                nums[0], nums[1], nums[2], nums[3], nums[4], nums[5],
+                combo["score"], req.start_draw, req.end_draw,
+            ))
+        conn.commit()
+        conn.close()
+        return {"status": "ok", "session_id": now_str}
     except Exception as exc:
         import traceback
         return JSONResponse(

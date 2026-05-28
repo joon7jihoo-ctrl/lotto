@@ -42,8 +42,20 @@ html,body{
   box-shadow:0 3px 18px rgba(0,0,0,.12);
   padding:16px 20px;
 }
+.btn-row{display:flex;align-items:flex-end;gap:10px}
+.draw-select-wrap{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.draw-select-lbl{font-size:11px;color:#aaa;font-weight:600;text-align:center;letter-spacing:.3px}
+.draw-sel{
+  height:58px;width:172px;padding:0 10px;
+  border:1.5px solid #e8e8e8;border-radius:10px;
+  font-size:13px;font-weight:600;color:#333;
+  background:#fafafa;cursor:pointer;
+  font-family:inherit;
+}
+.draw-sel:focus{outline:none;border-color:#e52748;background:#fff}
 #btn-predict{
-  width:100%;padding:20px 10px;
+  flex:1;min-width:0;
+  height:58px;padding:0 10px;
   background:#e52748;color:#fff;
   border:none;border-radius:10px;
   font-size:18px;font-weight:700;
@@ -296,7 +308,8 @@ html,body{
 @media(max-width:899px){
   .page-wrap{padding:16px 16px 48px;gap:14px}
   .btn-card{padding:12px 16px;border-radius:12px;max-width:680px}
-  #btn-predict{font-size:16px;padding:16px 10px}
+  .draw-sel{height:50px;width:148px;font-size:12px}
+  #btn-predict{font-size:16px;height:50px;padding:0 10px}
   .cards-wrap{flex-direction:column;gap:14px;max-width:680px;align-items:stretch}
   .card{padding:28px 28px 34px;border-radius:18px}
   .logo-wrap{margin-bottom:16px;padding-bottom:16px}
@@ -326,7 +339,10 @@ html,body{
 @media(max-width:599px){
   .page-wrap{padding:10px 10px 36px;gap:10px}
   .btn-card{padding:10px 12px;border-radius:12px;max-width:100%}
-  #btn-predict{font-size:15px;padding:15px}
+  .btn-row{flex-wrap:wrap;gap:8px}
+  .draw-select-wrap{flex:1;min-width:calc(50% - 4px)}
+  .draw-sel{width:100%;height:44px;font-size:12px}
+  #btn-predict{font-size:15px;height:46px;padding:0;flex:none;width:100%}
   .cards-wrap{flex-direction:column;gap:10px;max-width:100%;align-items:stretch}
   .card{padding:22px 20px 26px;border-radius:16px}
   .logo-wrap{margin-bottom:14px;padding-bottom:14px}
@@ -434,9 +450,23 @@ html,body{
 <!-- 페이지 본체 -->
 <div class="page-wrap">
 
-  <!-- 상단 예상 번호 버튼 -->
+  <!-- 상단: 회차 선택 + 예상 번호 버튼 -->
   <div class="btn-card">
-    <button id="btn-predict" onclick="onPredictClick()">예상 번호 조합 생성</button>
+    <div class="btn-row">
+      <div class="draw-select-wrap">
+        <span class="draw-select-lbl">시작회차</span>
+        <select id="sel-start" class="draw-sel">
+          <option value="1">제1회 (전체)</option>
+        </select>
+      </div>
+      <div class="draw-select-wrap">
+        <span class="draw-select-lbl">마지막회차</span>
+        <select id="sel-end" class="draw-sel">
+          <option value="0">최신회차</option>
+        </select>
+      </div>
+      <button id="btn-predict" onclick="onPredictClick()">예상 번호 조합 생성</button>
+    </div>
   </div>
 
   <!-- 두 카드 -->
@@ -590,6 +620,41 @@ function equalizeCards() {
 }
 window.addEventListener('resize', equalizeCards);
 
+// ── 회차 드롭다운 ─────────────────────────────────────────
+let _latestDrawNo = 0;
+
+function populateDropdowns(latestNo) {
+  _latestDrawNo = latestNo;
+  const selStart = document.getElementById('sel-start');
+  const selEnd   = document.getElementById('sel-end');
+  if (!selStart || !selEnd) return;
+
+  // 시작회차 옵션 생성
+  const startOpts = [{ label: `제1회 (전체 ${latestNo}회)`, value: 1 }];
+  for (const [cnt, lbl] of [[1000,'최근1000'], [500,'최근500'], [200,'최근200'], [100,'최근100'], [50,'최근50']]) {
+    const from = latestNo - cnt + 1;
+    if (from > 1) startOpts.push({ label: `제${from}회 (${lbl}회)`, value: from });
+  }
+  selStart.innerHTML = startOpts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+
+  // 마지막회차 옵션 생성
+  const endOpts = [{ label: `최신 제${latestNo}회`, value: 0 }];
+  for (const offset of [1, 4, 9, 19, 49, 99]) {
+    const n = latestNo - offset;
+    if (n > 0) endOpts.push({ label: `제${n}회 (-${offset}회)`, value: n });
+  }
+  selEnd.innerHTML = endOpts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+
+  resetDropdowns();
+}
+
+function resetDropdowns() {
+  const selStart = document.getElementById('sel-start');
+  const selEnd   = document.getElementById('sel-end');
+  if (selStart) selStart.value = '1';
+  if (selEnd)   selEnd.value   = '0';
+}
+
 // ── UTC → KST 변환 ───────────────────────────────────────
 function utcToKST(utcStr) {
   const d = new Date(utcStr);
@@ -676,6 +741,9 @@ async function loadInfo() {
         makeBall(bonus, true);
     }
 
+    // 드롭다운 초기화 (최신 회차 기준)
+    if (json.latest_draw_no) populateDropdowns(json.latest_draw_no);
+
     // 동기화 상태 업데이트
     if (json.sync) updateSyncUI(json.sync);
 
@@ -695,8 +763,10 @@ async function onPredictClick() {
   btn.disabled = true;
 
   try {
+    const startDraw = parseInt(document.getElementById('sel-start')?.value || '1');
+    const maxDraw   = parseInt(document.getElementById('sel-end')?.value   || '0');
     const cfg = {
-      start_draw:1, max_draw:0, deadzone_window:25,
+      start_draw: startDraw, max_draw: maxDraw, deadzone_window:25,
       top_candidate_count:20, output_limit:5,
       recent_weight:40, missing_weight:20, square_weight:0,
       deadzone_weight:15, zone_weight:15, mix_previous_ratio:5,
@@ -748,11 +818,14 @@ function renderPopup(json) {
 }
 
 function handlePopupBg(e) {
-  if (e.target === document.getElementById('result-popup'))
+  if (e.target === document.getElementById('result-popup')) {
     document.getElementById('result-popup').classList.remove('show');
+    resetDropdowns();
+  }
 }
 function closePopupBtn() {
   document.getElementById('result-popup').classList.remove('show');
+  resetDropdowns();
 }
 
 // ── 초기 실행 ─────────────────────────────────────────────

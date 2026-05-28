@@ -302,6 +302,24 @@ html,body{
 .ball-xs{width:72px;height:72px;font-size:22px}
 .td-score{font-size:17px;font-weight:700;color:#333;width:70px}
 
+.popup-save-wrap{
+  text-align:center;
+  margin:16px 0 8px;
+}
+.popup-save-btn{
+  background:#e52748;color:#fff;
+  border:none;border-radius:10px;
+  padding:11px 32px;
+  font-size:14px;font-weight:700;
+  cursor:pointer;font-family:inherit;
+  transition:opacity .15s,background .2s;
+  letter-spacing:-.2px;
+}
+.popup-save-btn:hover{opacity:.88}
+.popup-save-btn:disabled{opacity:.5;cursor:not-allowed}
+.popup-save-btn.saved{background:#2dbc6a}
+.popup-save-btn.error{background:#f49e28}
+
 .popup-note{
   font-size:11px;color:#aaa;
   text-align:center;margin-top:14px;
@@ -615,6 +633,11 @@ html,body{
       </thead>
       <tbody id="combo-tbody"></tbody>
     </table>
+    <div class="popup-save-wrap">
+      <button class="popup-save-btn" id="popup-save-btn" onclick="saveCurrentPrediction()">
+        📋 이력에 저장하기
+      </button>
+    </div>
     <p class="popup-note">※ AI 분석 결과는 참고용이며 당첨을 보장하지 않습니다</p>
   </div>
 </div>
@@ -951,19 +974,15 @@ async function onPredictClick() {
     btn.disabled = false;
     if (json.status !== 'ok') { alert('오류: ' + (json.message || '서버 오류')); return; }
     renderPopup(json, startDraw, maxDraw);
-    // 자동저장 후 배지 갱신
-    fetch('/api/my_history').then(r => r.json()).then(j => {
-      if (j.status === 'ok') {
-        const sessions = new Set((j.history || []).map(h => h.session_id));
-        _updateBadge(sessions.size);
-      }
-    }).catch(() => {});
   } catch(e) {
     ov.classList.remove('show');
     btn.disabled = false;
     alert('요청 실패: ' + e.message);
   }
 }
+
+// ── 현재 팝업 데이터 (수동 저장용) ───────────────────────
+let _currentPrediction = null;
 
 // ── 팝업 렌더링 (순위 / 번호 / 총점) ─────────────────────
 function renderPopup(json, startDraw, maxDraw) {
@@ -990,18 +1009,70 @@ function renderPopup(json, startDraw, maxDraw) {
     tbody.appendChild(tr);
   });
 
+  // 수동 저장을 위해 현재 결과 보관
+  _currentPrediction = {
+    target_no:    nextNo,
+    start_draw:   startNo,
+    end_draw:     endNo,
+    combinations: combos.map((c, i) => ({
+      rank:    i + 1,
+      numbers: c.numbers,
+      score:   c.score,
+    })),
+  };
+
+  // 저장 버튼 초기화
+  const saveBtn = document.getElementById('popup-save-btn');
+  if (saveBtn) {
+    saveBtn.textContent = '📋 이력에 저장하기';
+    saveBtn.disabled    = false;
+    saveBtn.className   = 'popup-save-btn';
+  }
+
   document.getElementById('result-popup').classList.add('show');
+}
+
+// ── 수동 저장 ─────────────────────────────────────────────
+async function saveCurrentPrediction() {
+  if (!_currentPrediction) return;
+  const btn = document.getElementById('popup-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '저장 중…'; }
+
+  try {
+    const res  = await fetch('/api/save_prediction', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(_currentPrediction),
+    });
+    const json = await res.json();
+    if (json.status === 'ok') {
+      if (btn) { btn.textContent = '✅ 저장됨'; btn.className = 'popup-save-btn saved'; }
+      // 배지 갱신
+      fetch('/api/my_history').then(r => r.json()).then(j => {
+        if (j.status === 'ok') {
+          const sessions = new Set((j.history || []).map(h => h.session_id));
+          _updateBadge(sessions.size);
+        }
+      }).catch(() => {});
+    } else {
+      if (btn) { btn.textContent = '❌ 저장 실패'; btn.className = 'popup-save-btn error'; btn.disabled = false; }
+    }
+  } catch(e) {
+    if (btn) { btn.textContent = '❌ 저장 실패'; btn.className = 'popup-save-btn error'; btn.disabled = false; }
+  }
 }
 
 function handlePopupBg(e) {
   if (e.target === document.getElementById('result-popup')) {
     document.getElementById('result-popup').classList.remove('show');
     resetDropdowns();
+    _currentPrediction = null;
   }
 }
 function closePopupBtn() {
   document.getElementById('result-popup').classList.remove('show');
   resetDropdowns();
+  _currentPrediction = null;
 }
 
 // ── 이력 드로어 ───────────────────────────────────────────

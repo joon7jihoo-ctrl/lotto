@@ -590,6 +590,14 @@ function equalizeCards() {
 }
 window.addEventListener('resize', equalizeCards);
 
+// ── UTC → KST 변환 ───────────────────────────────────────
+function utcToKST(utcStr) {
+  const d = new Date(utcStr);
+  const kst = new Date(d.getTime() + 9 * 3600 * 1000);
+  // "YYYY-MM-DD HH:MM" 형식으로 반환
+  return kst.toISOString().slice(0, 16).replace('T', ' ');
+}
+
 // ── 동기화 상태 UI ──────────────────────────────────────
 let _syncPollTimer = null;
 
@@ -611,7 +619,7 @@ function updateSyncUI(sync) {
     if (_syncPollTimer) { clearInterval(_syncPollTimer); _syncPollTimer = null; }
     if (sync.state === 'done') {
       const max = sync.max_draw_in_db ? `${sync.max_draw_in_db}회 최신` : '';
-      const last = sync.last_sync ? ` · ${sync.last_sync.slice(0,16).replace('T',' ')} UTC` : '';
+      const last = sync.last_sync ? ` · ${utcToKST(sync.last_sync)} KST` : '';
       text.textContent = max + last || sync.message || '동기화 완료';
     } else if (sync.state === 'error') {
       text.textContent = '동기화 오류: ' + (sync.message || '');

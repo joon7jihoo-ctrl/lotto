@@ -362,6 +362,40 @@ html,body{
   .draw-no-text,.result-round-text{font-size:26px}
   .ball-xs{width:36px;height:36px;font-size:11px}
 }
+
+/* ── 동기화 상태 바 ── */
+.sync-bar{
+  width:100%;max-width:1200px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;
+  background:rgba(255,255,255,.16);
+  border-radius:10px;
+  padding:8px 16px;
+  font-size:12px;color:rgba(255,255,255,.9);
+}
+.sync-left{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+.sync-dot{
+  width:8px;height:8px;border-radius:50%;
+  display:inline-block;flex-shrink:0;
+}
+.sync-dot.idle{background:rgba(255,255,255,.4)}
+.sync-dot.syncing{background:#FFD700;animation:pulse .9s ease infinite}
+.sync-dot.done{background:#4cde80}
+.sync-dot.error{background:#ff6b6b}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sync-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sync-btn{
+  background:rgba(255,255,255,.2);border:none;border-radius:6px;
+  padding:5px 10px;font-size:11px;font-weight:600;color:#fff;
+  cursor:pointer;white-space:nowrap;font-family:inherit;
+  flex-shrink:0;transition:background .15s;
+}
+.sync-btn:hover{background:rgba(255,255,255,.32)}
+.sync-btn:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:599px){
+  .sync-bar{padding:7px 12px;font-size:11px}
+  .sync-btn{padding:4px 8px;font-size:10px}
+}
 </style>
 </head>
 <body>
@@ -474,6 +508,16 @@ html,body{
     </div>
 
   </div><!-- .cards-wrap -->
+
+  <!-- 동기화 상태 바 -->
+  <div class="sync-bar" id="sync-bar">
+    <div class="sync-left">
+      <span class="sync-dot idle" id="sync-dot"></span>
+      <span class="sync-text" id="sync-text">동기화 상태 확인 중…</span>
+    </div>
+    <button class="sync-btn" id="sync-btn" onclick="doManualSync()">↻ 동기화</button>
+  </div>
+
 </div><!-- .page-wrap -->
 
 <script>
@@ -546,6 +590,59 @@ function equalizeCards() {
 }
 window.addEventListener('resize', equalizeCards);
 
+// ── 동기화 상태 UI ──────────────────────────────────────
+let _syncPollTimer = null;
+
+function updateSyncUI(sync) {
+  const dot  = document.getElementById('sync-dot');
+  const text = document.getElementById('sync-text');
+  const btn  = document.getElementById('sync-btn');
+  if (!dot || !text) return;
+
+  dot.className = 'sync-dot ' + (sync.state || 'idle');
+
+  if (sync.state === 'syncing') {
+    text.textContent = sync.message || '동기화 중…';
+    if (btn) btn.disabled = true;
+    if (!_syncPollTimer)
+      _syncPollTimer = setInterval(pollSyncStatus, 2500);
+  } else {
+    if (btn) btn.disabled = false;
+    if (_syncPollTimer) { clearInterval(_syncPollTimer); _syncPollTimer = null; }
+    if (sync.state === 'done') {
+      const max = sync.max_draw_in_db ? `${sync.max_draw_in_db}회 최신` : '';
+      const last = sync.last_sync ? ` · ${sync.last_sync.slice(0,16).replace('T',' ')} UTC` : '';
+      text.textContent = max + last || sync.message || '동기화 완료';
+    } else if (sync.state === 'error') {
+      text.textContent = '동기화 오류: ' + (sync.message || '');
+    } else {
+      text.textContent = sync.message || '동기화 대기 중';
+    }
+  }
+}
+
+async function pollSyncStatus() {
+  try {
+    const res  = await fetch('/api/sync_status');
+    const sync = await res.json();
+    updateSyncUI(sync);
+    if (sync.state === 'done' || sync.state === 'error') {
+      loadInfo();  // 완료되면 최신 정보 다시 로드
+    }
+  } catch(e) {}
+}
+
+async function doManualSync() {
+  const btn = document.getElementById('sync-btn');
+  if (btn) btn.disabled = true;
+  try {
+    await fetch('/api/sync', { method: 'POST' });
+    setTimeout(pollSyncStatus, 800);
+  } catch(e) {
+    if (btn) btn.disabled = false;
+  }
+}
+
 // ── /api/info 로드 ────────────────────────────────────────
 async function loadInfo() {
   try {
@@ -570,6 +667,10 @@ async function loadInfo() {
         '<div class="plus-sign">+</div>' +
         makeBall(bonus, true);
     }
+
+    // 동기화 상태 업데이트
+    if (json.sync) updateSyncUI(json.sync);
+
   } catch(e) {
     console.warn('loadInfo 실패:', e);
   } finally {
@@ -648,6 +749,7 @@ function closePopupBtn() {
 
 // ── 초기 실행 ─────────────────────────────────────────────
 loadInfo();
+pollSyncStatus();  // 즉시 동기화 상태 확인 (서버 시작 시 자동 동기화 중일 수 있음)
 </script>
 </body>
 </html>

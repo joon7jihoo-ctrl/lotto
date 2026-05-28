@@ -321,21 +321,6 @@ html,body{
 }
 .ptab:hover{color:#999}
 .ptab.active{color:#e52748;border-bottom-color:#e52748}
-<<<<<<< HEAD
-.ptab-pane{padding-top:4px}
-
-/* ── 히트맵 ── */
-.heatmap-wrap{padding:10px 0 4px}
-.heatmap-grid{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:5px;
-  max-width:392px;
-  margin:0 auto 14px;
-}
-.hm-cell{
-  aspect-ratio:1;border-radius:7px;
-=======
 .ptab-pane{
   padding-top:4px;
   flex:1;min-height:0;
@@ -362,7 +347,6 @@ html,body{
 }
 .hm-cell{
   aspect-ratio:1;border-radius:5px;
->>>>>>> 3ecc5f2 (feat: Ver3.0 웹앱 — 히트맵·점수표 탭, 번호저장·이력 기능 추가)
   display:flex;align-items:center;justify-content:center;
   font-size:11px;font-weight:800;
   cursor:default;
@@ -384,11 +368,7 @@ html,body{
 
 /* ── 점수표 ── */
 .score-tbl-wrap{
-<<<<<<< HEAD
-  max-height:340px;overflow-y:auto;
-=======
   flex:1;min-height:0;overflow-y:auto;
->>>>>>> 3ecc5f2 (feat: Ver3.0 웹앱 — 히트맵·점수표 탭, 번호저장·이력 기능 추가)
   margin-bottom:8px;
 }
 .score-tbl{width:100%;border-collapse:collapse}
@@ -1179,9 +1159,6 @@ function renderPopup(json, startDraw, maxDraw) {
   // 탭을 번호 조합으로 초기화
   switchPopupTab('combos');
 
-<<<<<<< HEAD
-  document.getElementById('result-popup').classList.add('show');
-=======
   const popup = document.getElementById('result-popup');
   const card  = popup.querySelector('.popup-card');
   if (card) card.style.height = '';   // 이전 잠금 해제 후 재측정
@@ -1195,7 +1172,6 @@ function renderPopup(json, startDraw, maxDraw) {
       }
     });
   });
->>>>>>> 3ecc5f2 (feat: Ver3.0 웹앱 — 히트맵·점수표 탭, 번호저장·이력 기능 추가)
 }
 
 // ── 팝업 탭 전환 ─────────────────────────────────────────
@@ -1325,37 +1301,21 @@ async function saveCurrentPrediction() {
   }
 }
 
-<<<<<<< HEAD
-function handlePopupBg(e) {
-  if (e.target === document.getElementById('result-popup')) {
-    document.getElementById('result-popup').classList.remove('show');
-    resetDropdowns();
-    _currentPrediction = null;
-    _currentAnalysis   = null;
-  }
-}
-function closePopupBtn() {
-  document.getElementById('result-popup').classList.remove('show');
-=======
 function _closePopup() {
   const popup = document.getElementById('result-popup');
   popup.classList.remove('show');
   const card = popup.querySelector('.popup-card');
   if (card) card.style.height = '';
->>>>>>> 3ecc5f2 (feat: Ver3.0 웹앱 — 히트맵·점수표 탭, 번호저장·이력 기능 추가)
   resetDropdowns();
   _currentPrediction = null;
   _currentAnalysis   = null;
 }
-<<<<<<< HEAD
-=======
 function handlePopupBg(e) {
   if (e.target === document.getElementById('result-popup')) _closePopup();
 }
 function closePopupBtn() {
   _closePopup();
 }
->>>>>>> 3ecc5f2 (feat: Ver3.0 웹앱 — 히트맵·점수표 탭, 번호저장·이력 기능 추가)
 
 // ── 이력 드로어 ───────────────────────────────────────────
 function openHistory() {

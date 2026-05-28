@@ -458,13 +458,13 @@ html,body{
       <div class="draw-select-wrap">
         <span class="draw-select-lbl">시작회차</span>
         <select id="sel-start" class="draw-sel">
-          <option value="1">전체</option>
+          <option value="1">1</option>
         </select>
       </div>
       <div class="draw-select-wrap">
         <span class="draw-select-lbl">마지막회차</span>
         <select id="sel-end" class="draw-sel">
-          <option value="0">—</option>
+          <option value="1">1</option>
         </select>
       </div>
       <button id="btn-predict" onclick="onPredictClick()">예상 번호 조합 생성</button>
@@ -631,21 +631,15 @@ function populateDropdowns(latestNo) {
   const selEnd   = document.getElementById('sel-end');
   if (!selStart || !selEnd) return;
 
-  // 시작회차 옵션 생성
-  const startOpts = [{ label: `전체`, value: 1 }];
-  for (const cnt of [1000, 500, 200, 100, 50]) {
-    const from = latestNo - cnt + 1;
-    if (from > 1) startOpts.push({ label: `${from}`, value: from });
+  // 1회 ~ 최신 회차까지 전체 옵션 생성
+  let startHtml = '';
+  let endHtml   = '';
+  for (let i = 1; i <= latestNo; i++) {
+    startHtml += `<option value="${i}">${i}</option>`;
+    endHtml   += `<option value="${i}">${i}</option>`;
   }
-  selStart.innerHTML = startOpts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
-
-  // 마지막회차 옵션 생성 (value=0 은 "최신" 의미, 표시는 실제 회차번호)
-  const endOpts = [{ label: `${latestNo}`, value: 0 }];
-  for (const offset of [1, 4, 9, 19, 49, 99]) {
-    const n = latestNo - offset;
-    if (n > 0) endOpts.push({ label: `${n}`, value: n });
-  }
-  selEnd.innerHTML = endOpts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+  selStart.innerHTML = startHtml;
+  selEnd.innerHTML   = endHtml;
 
   resetDropdowns();
 }
@@ -654,7 +648,7 @@ function resetDropdowns() {
   const selStart = document.getElementById('sel-start');
   const selEnd   = document.getElementById('sel-end');
   if (selStart) selStart.value = '1';
-  if (selEnd)   selEnd.value   = '0';
+  if (selEnd && _latestDrawNo) selEnd.value = String(_latestDrawNo);
 }
 
 // ── UTC → KST 변환 ───────────────────────────────────────
@@ -799,7 +793,7 @@ function renderPopup(json, startDraw, maxDraw) {
   const combos   = json.combinations || [];
   const data     = json.data || {};
   const nextNo   = (data.latest_draw_no || 0) + 1;
-  const endNo    = (maxDraw && maxDraw > 0) ? maxDraw : (data.latest_draw_no || 0);
+  const endNo    = maxDraw || data.latest_draw_no || 0;
   const startNo  = startDraw || 1;
 
   document.getElementById('popup-info').textContent = data.latest_draw_no

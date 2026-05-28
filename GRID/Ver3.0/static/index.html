@@ -7,149 +7,292 @@
 <link rel="icon" type="image/png" href="/favicon.png"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{min-height:100%;font-family:"Apple SD Gothic Neo","Malgun Gothic","Nanum Gothic",sans-serif;background:#f04060;color:#222;text-align:center}
-
-/* ── 배경 워터마크 숫자 ── */
-.bg-wrap{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
-.bg-num{position:absolute;font-size:clamp(48px,8vw,110px);font-weight:900;color:rgba(255,255,255,0.07);line-height:1;user-select:none}
-
-/* ── 전체 레이아웃 ── */
-.page-wrap{position:relative;z-index:1;min-height:100vh;padding:16px 12px 32px;display:flex;flex-direction:column;align-items:center;gap:14px}
-
-/* ── 상단 버튼 ── */
-#top-bar{width:100%;max-width:900px}
-#btn-predict{
-  width:100%;padding:18px 20px;
-  background:#e8213a;color:#fff;
-  border:none;border-radius:10px;
-  font-size:18px;font-weight:800;
-  cursor:pointer;letter-spacing:-.3px;
-  box-shadow:0 4px 16px rgba(0,0,0,.25);
-  transition:opacity .15s,transform .1s;
+html,body{
+  min-height:100%;
+  font-family:"Malgun Gothic","Apple SD Gothic Neo","나눔고딕","Nanum Gothic",sans-serif;
+  background:#e52748;
+  color:#222;
+  font-size:14px;
+  -webkit-font-smoothing:antialiased;
 }
-#btn-predict:hover{opacity:.92}
-#btn-predict:active{transform:scale(.985)}
-#btn-predict:disabled{opacity:.6;cursor:not-allowed}
+
+/* ── 배경 워터마크 ── */
+.bg-wrap{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.bg-num{
+  position:absolute;font-weight:900;
+  font-size:clamp(60px,9vw,130px);
+  color:rgba(255,255,255,.055);
+  line-height:1;user-select:none;
+}
+
+/* ── 페이지 래퍼 ── */
+.page-wrap{
+  position:relative;z-index:1;
+  min-height:100vh;
+  padding:14px 14px 48px;
+  display:flex;flex-direction:column;
+  align-items:center;gap:12px;
+}
+
+/* ── 버튼 카드 ── */
+.btn-card{
+  width:100%;max-width:860px;
+  background:#fff;
+  border-radius:14px;
+  box-shadow:0 3px 16px rgba(0,0,0,.12);
+  padding:14px 16px;
+}
+#btn-predict{
+  width:100%;padding:15px 10px;
+  background:#e52748;color:#fff;
+  border:none;border-radius:8px;
+  font-size:15px;font-weight:700;
+  cursor:pointer;letter-spacing:-.2px;
+  font-family:inherit;
+  transition:opacity .15s,transform .08s;
+}
+#btn-predict:hover{opacity:.88}
+#btn-predict:active{transform:scale(.99);opacity:.8}
+#btn-predict:disabled{opacity:.55;cursor:not-allowed}
 
 /* ── 카드 컨테이너 ── */
-.main-wrap{
-  width:100%;max-width:900px;
-  display:flex;flex-wrap:wrap;
-  gap:14px;align-items:flex-start;
+.cards-wrap{
+  width:100%;max-width:860px;
+  display:flex;gap:12px;align-items:flex-start;
 }
 
 /* ── 공통 카드 ── */
 .card{
-  background:#fff;border-radius:20px;
-  box-shadow:0 6px 32px rgba(0,0,0,.18);
-  padding:20px 22px;flex:1;min-width:280px;
+  background:#fff;
+  border-radius:14px;
+  box-shadow:0 3px 16px rgba(0,0,0,.12);
+  padding:18px 18px 20px;
+  flex:1;min-width:0;
 }
 
-/* ── 좌측 카드 (다음 회차) ── */
-.card-upcoming .logo-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px}
-.lotto-badge{background:#e8213a;color:#fff;font-size:11px;font-weight:800;padding:4px 9px;border-radius:6px;letter-spacing:.5px}
-.lotto-title{font-size:17px;font-weight:800;color:#222}
-.lotto-subtitle{font-size:11px;color:#888;margin-top:1px}
+/* ── 좌측 카드 ── */
+.price-tag{
+  text-align:right;
+  font-size:11px;
+  color:#bbb;
+  margin-bottom:10px;
+  font-weight:400;
+}
 
-.draw-no-row{display:flex;align-items:baseline;justify-content:center;gap:6px;margin-bottom:6px}
-.draw-label{font-size:12px;color:#888}
-.draw-no{font-size:26px;font-weight:900;color:#e8213a}
-.draw-sub{font-size:12px;color:#aaa}
+.logo-wrap{
+  text-align:center;
+  padding-bottom:14px;
+  margin-bottom:14px;
+  border-bottom:1px solid #f0f0f0;
+}
+.logo-wrap img{
+  height:36px;
+  max-width:170px;
+  object-fit:contain;
+}
+.logo-fallback{
+  font-size:18px;font-weight:800;
+  color:#e52748;letter-spacing:-1px;
+}
 
-.countdown-label{font-size:11px;color:#888;margin-bottom:4px;text-align:center}
-.countdown-wrap{display:flex;gap:6px;margin-bottom:0;justify-content:center}
-.cd-unit{display:flex;flex-direction:column;align-items:center;gap:2px}
-.cd-val{font-size:22px;font-weight:900;color:#e8213a;min-width:44px;text-align:center;background:#fff5f5;border-radius:8px;padding:4px 6px;line-height:1}
-.cd-lbl{font-size:9px;color:#aaa}
-.cd-sep{font-size:22px;font-weight:900;color:#e8213a;line-height:1;align-self:flex-start;margin-top:6px}
+.draw-no-wrap{text-align:center;margin-bottom:3px}
+.draw-no-text{
+  font-size:26px;font-weight:800;
+  color:#111;letter-spacing:-.5px;
+}
 
-/* ── 우측 카드 (최근 추첨) ── */
-.card-result .result-header{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-bottom:14px}
-.result-title{font-size:16px;font-weight:800;color:#222}
-.result-round{font-size:13px;color:#888}
-.result-date{font-size:11px;color:#bbb}
+.draw-schedule-wrap{text-align:center;margin-bottom:14px}
+.draw-schedule-text{
+  font-size:12px;font-weight:500;
+  color:#e52748;
+}
 
-.balls-row{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.cd-header{
+  text-align:center;
+  font-size:11px;color:#bbb;
+  margin-bottom:6px;
+}
+
+.countdown-row{
+  display:flex;justify-content:center;
+  align-items:flex-start;gap:0;
+}
+.cd-unit{
+  display:flex;flex-direction:column;
+  align-items:center;
+  padding:0 8px;
+}
+.cd-val{
+  font-size:46px;font-weight:800;
+  color:#e52748;line-height:1;
+  letter-spacing:-.5px;
+  min-width:48px;text-align:center;
+}
+.cd-lbl{
+  font-size:10px;color:#bbb;
+  margin-top:5px;
+}
+
+/* ── 우측 카드 ── */
+.result-header-label{
+  text-align:center;font-size:11px;
+  color:#bbb;margin-bottom:4px;
+  letter-spacing:.2px;
+}
+.result-round-text{
+  text-align:center;
+  font-size:26px;font-weight:800;
+  color:#111;letter-spacing:-.5px;
+  margin-bottom:2px;
+}
+.result-date-text{
+  text-align:center;
+  font-size:12px;color:#bbb;
+  margin-bottom:16px;
+}
+
+.balls-row{
+  display:flex;align-items:center;
+  justify-content:center;
+  gap:5px;flex-wrap:nowrap;
+  margin-bottom:8px;
+}
 .ball{
-  width:42px;height:42px;border-radius:50%;
+  width:40px;height:40px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:14px;font-weight:900;color:#fff;
-  box-shadow:0 3px 8px rgba(0,0,0,.20);
-  flex-shrink:0;text-shadow:0 1px 2px rgba(0,0,0,.25);
+  font-size:13px;font-weight:800;color:#fff;
+  box-shadow:0 2px 7px rgba(0,0,0,.18);
+  flex-shrink:0;
+  text-shadow:0 1px 3px rgba(0,0,0,.22);
 }
-.ball-sm{width:36px;height:36px;font-size:12px}
-.ball-xs{width:30px;height:30px;font-size:11px}
-.plus-sign{font-size:18px;color:#ccc;font-weight:300}
+.plus-sign{
+  font-size:16px;color:#ddd;
+  font-weight:300;margin:0 1px;flex-shrink:0;
+}
 
-/* 번호별 색상 */
-.b1 {background:linear-gradient(145deg,#ffd233,#FBC400)}
-.b2 {background:linear-gradient(145deg,#86d9f9,#69C8F2)}
-.b3 {background:linear-gradient(145deg,#ff8989,#FF6969)}
-.b4 {background:linear-gradient(145deg,#c5c5c5,#AAAAAA)}
-.b5 {background:linear-gradient(145deg,#c7e85d,#B0D840)}
-.b-bonus{background:linear-gradient(145deg,#aaa,#888);opacity:.85}
+.b1{background:radial-gradient(circle at 38% 35%,#ffe566 0%,#FBC400 100%)}
+.b2{background:radial-gradient(circle at 38% 35%,#a6e8fa 0%,#69C8F2 100%)}
+.b3{background:radial-gradient(circle at 38% 35%,#ffa0a0 0%,#FF6969 100%)}
+.b4{background:radial-gradient(circle at 38% 35%,#d8d8d8 0%,#AAAAAA 100%)}
+.b5{background:radial-gradient(circle at 38% 35%,#d5ed74 0%,#B0D840 100%)}
+.b-bonus{background:radial-gradient(circle at 38% 35%,#c0c0c0 0%,#888888 100%)}
 
-/* ── 로딩 오버레이 ── */
+/* 당첨번호 / 보너스번호 라벨 */
+.ball-label-row{
+  display:flex;align-items:center;
+  width:100%;gap:6px;
+}
+.label-section{
+  display:flex;align-items:center;gap:0;
+}
+.label-section.win-section{flex:6}
+.label-section.bonus-section{flex:1}
+.label-line{flex:1;height:1px;background:#e6e6e6}
+.label-txt{
+  font-size:10px;color:#bbb;
+  white-space:nowrap;padding:0 5px;
+  flex-shrink:0;
+}
+
+/* ── 로딩 ── */
 #loading-overlay{
   display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,.55);z-index:500;
-  align-items:center;justify-content:center;flex-direction:column;gap:16px;
+  background:rgba(0,0,0,.52);z-index:500;
+  align-items:center;justify-content:center;
+  flex-direction:column;gap:14px;
 }
 #loading-overlay.show{display:flex}
 .spinner{
-  width:50px;height:50px;
-  border:5px solid rgba(255,255,255,.3);
+  width:44px;height:44px;
+  border:4px solid rgba(255,255,255,.28);
   border-top-color:#fff;
   border-radius:50%;
-  animation:spin .75s linear infinite;
+  animation:spin .7s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-msg{color:#fff;font-size:14px;font-weight:600}
+.loading-txt{color:#fff;font-size:13px;font-weight:600;font-family:inherit}
 
 /* ── 결과 팝업 ── */
 #result-popup{
   display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,.65);z-index:400;
+  background:rgba(0,0,0,.58);z-index:400;
   align-items:center;justify-content:center;
   padding:16px;
 }
 #result-popup.show{display:flex}
 .popup-card{
-  background:#fff;border-radius:20px;
-  box-shadow:0 8px 48px rgba(0,0,0,.35);
-  padding:22px 20px;width:100%;max-width:480px;
-  max-height:90vh;overflow-y:auto;
+  background:#fff;
+  border-radius:14px;
+  box-shadow:0 8px 40px rgba(0,0,0,.28);
+  padding:20px 18px;
+  width:100%;max-width:400px;
+  max-height:88vh;overflow-y:auto;
 }
-.popup-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.popup-title{font-size:16px;font-weight:900;color:#222}
-.popup-close{
-  background:#f0f0f0;border:none;border-radius:50%;
-  width:32px;height:32px;font-size:18px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;color:#666;
+.popup-head{
+  display:flex;align-items:center;
+  justify-content:space-between;
+  padding-bottom:10px;
+  border-bottom:1px solid #f0f0f0;
+  margin-bottom:8px;
 }
-.popup-close:hover{background:#e0e0e0}
-.combo-row{
-  border-bottom:1px solid #f0f0f0;padding:12px 0;
+.popup-title{font-size:14px;font-weight:800;color:#111}
+.popup-close-btn{
+  background:#f5f5f5;border:none;border-radius:50%;
+  width:28px;height:28px;font-size:14px;
+  cursor:pointer;display:flex;align-items:center;
+  justify-content:center;color:#888;
+  font-family:inherit;
 }
-.combo-row:last-child{border-bottom:none}
-.combo-rank{font-size:20px;margin-bottom:8px}
-.combo-balls{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:6px}
-.combo-meta{font-size:11px;color:#999}
+.popup-close-btn:hover{background:#ebebeb}
+.popup-info{
+  font-size:11px;color:#bbb;
+  text-align:center;
+  margin-bottom:12px;
+}
 
-/* ── 경고 배너 ── */
-.warn-banner{
-  width:100%;max-width:900px;
-  background:rgba(255,255,255,.2);border-radius:10px;
-  padding:10px 16px;font-size:12px;color:#fff;
+/* 조합 테이블 */
+.combo-tbl{width:100%;border-collapse:collapse}
+.combo-tbl th{
+  font-size:10px;color:#bbb;font-weight:600;
+  padding:4px 2px;text-align:center;
+  border-bottom:1px solid #efefef;
+}
+.combo-tbl td{
+  padding:8px 2px;
+  text-align:center;
+  border-bottom:1px solid #f7f7f7;
+  vertical-align:middle;
+}
+.combo-tbl tr:last-child td{border-bottom:none}
+.td-rank{
+  font-size:13px;font-weight:700;
+  color:#e52748;width:26px;
+}
+.td-balls{
+  display:flex;align-items:center;
+  justify-content:center;gap:3px;
+  flex-wrap:wrap;
+}
+.ball-xs{width:26px;height:26px;font-size:9px}
+.td-score{font-size:12px;font-weight:700;color:#333;width:44px}
+
+.popup-note{
+  font-size:10px;color:#ccc;
+  text-align:center;margin-top:12px;
 }
 
 /* ── 반응형 ── */
-@media(max-width:599px){
-  .card{padding:16px 16px}
-  #btn-predict{font-size:15px;padding:15px 16px}
-  .draw-no{font-size:20px}
-  .cd-val{font-size:18px;min-width:36px}
-  .ball{width:36px;height:36px;font-size:12px}
+@media(max-width:620px){
+  .cards-wrap{flex-direction:column}
+  .cd-val{font-size:36px;min-width:38px}
+  .cd-unit{padding:0 5px}
+  .draw-no-text,.result-round-text{font-size:22px}
+  .ball{width:34px;height:34px;font-size:11px}
+  .logo-wrap img{height:30px}
+}
+@media(max-width:360px){
+  .cd-val{font-size:30px;min-width:32px}
+  .ball{width:28px;height:28px;font-size:10px}
 }
 </style>
 </head>
@@ -158,25 +301,31 @@ html,body{min-height:100%;font-family:"Apple SD Gothic Neo","Malgun Gothic","Nan
 <!-- 배경 워터마크 -->
 <div class="bg-wrap" id="bg-nums"></div>
 
-<!-- 로딩 -->
+<!-- 로딩 오버레이 -->
 <div id="loading-overlay">
   <div class="spinner"></div>
-  <p class="loading-msg" id="loading-msg">AI 분석 중...</p>
+  <p class="loading-txt" id="loading-txt">AI 분석 중... 잠시만 기다려 주세요</p>
 </div>
 
 <!-- 결과 팝업 -->
-<div id="result-popup" onclick="closePopup(event)">
+<div id="result-popup" onclick="handlePopupBg(event)">
   <div class="popup-card">
-    <div class="popup-header">
-      <div class="popup-title">🎯 AI 예상 번호 조합</div>
-      <button class="popup-close" onclick="closePopupBtn()">✕</button>
+    <div class="popup-head">
+      <span class="popup-title">AI 예상 번호 조합</span>
+      <button class="popup-close-btn" onclick="closePopupBtn()">✕</button>
     </div>
-    <div id="popup-draw-info" style="font-size:12px;color:#888;margin-bottom:14px"></div>
-    <div id="popup-combos"></div>
-    <div id="popup-warnings" style="margin-top:12px;font-size:11px;color:#e8213a"></div>
-    <p style="font-size:10px;color:#ccc;margin-top:14px;text-align:center">
-      ※ AI 분석 결과는 참고용이며 당첨을 보장하지 않습니다
-    </p>
+    <p class="popup-info" id="popup-info"></p>
+    <table class="combo-tbl">
+      <thead>
+        <tr>
+          <th>순위</th>
+          <th>번호</th>
+          <th>총점</th>
+        </tr>
+      </thead>
+      <tbody id="combo-tbody"></tbody>
+    </table>
+    <p class="popup-note">※ AI 분석 결과는 참고용이며 당첨을 보장하지 않습니다</p>
   </div>
 </div>
 
@@ -184,304 +333,234 @@ html,body{min-height:100%;font-family:"Apple SD Gothic Neo","Malgun Gothic","Nan
 <div class="page-wrap">
 
   <!-- 상단 예상 번호 버튼 -->
-  <div id="top-bar">
-    <button id="btn-predict" onclick="onPredictClick()">🎯 예상 번호 조합 생성</button>
+  <div class="btn-card">
+    <button id="btn-predict" onclick="onPredictClick()">예상 번호 조합 생성</button>
   </div>
 
   <!-- 두 카드 -->
-  <div class="main-wrap">
+  <div class="cards-wrap">
 
     <!-- 좌측: 다음 회차 -->
-    <div class="card card-upcoming">
-      <div class="logo-row">
-        <span class="lotto-badge">LOTTO</span>
-        <div>
-          <div class="lotto-title">로또 6/45</div>
-          <div class="lotto-subtitle">매주 토요일 추첨</div>
-        </div>
+    <div class="card">
+      <div class="price-tag">1,000원 / 1게임</div>
+      <div class="logo-wrap">
+        <img src="/static/lotto-logo.svg" alt="Lotto 6/45"
+             onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'"/>
+        <span class="logo-fallback" id="logo-fallback" style="display:none">Lotto 6/45</span>
       </div>
-
-      <div class="draw-no-row">
-        <span class="draw-label">제</span>
-        <span class="draw-no" id="next-draw-no">—</span>
-        <span class="draw-sub">회</span>
-        <span class="draw-sub" id="next-draw-date" style="margin-left:4px"></span>
+      <div class="draw-no-wrap">
+        <span class="draw-no-text">제<span id="next-draw-no">—</span>회</span>
       </div>
-
-      <div class="countdown-label">추첨까지 남은 시간</div>
-      <div class="countdown-wrap" id="countdown-wrap">
+      <div class="draw-schedule-wrap">
+        <span class="draw-schedule-text" id="next-draw-date">—</span>
+      </div>
+      <div class="cd-header">남은시간</div>
+      <div class="countdown-row">
         <div class="cd-unit">
           <div class="cd-val" id="cd-d">--</div>
           <div class="cd-lbl">일</div>
         </div>
-        <div class="cd-sep">:</div>
         <div class="cd-unit">
           <div class="cd-val" id="cd-h">--</div>
           <div class="cd-lbl">시간</div>
         </div>
-        <div class="cd-sep">:</div>
         <div class="cd-unit">
           <div class="cd-val" id="cd-m">--</div>
           <div class="cd-lbl">분</div>
         </div>
-        <div class="cd-sep">:</div>
         <div class="cd-unit">
           <div class="cd-val" id="cd-s">--</div>
           <div class="cd-lbl">초</div>
         </div>
       </div>
-
     </div>
 
     <!-- 우측: 최근 추첨 결과 -->
-    <div class="card card-result">
-      <div class="result-header">
-        <div class="result-title">최근 추첨 결과</div>
-        <div class="result-round" id="latest-round">제 — 회</div>
-        <div class="result-date" id="latest-date"></div>
-      </div>
-
+    <div class="card">
+      <div class="result-header-label">최근 추첨 결과</div>
+      <div class="result-round-text" id="latest-round-no">제 — 회</div>
+      <div class="result-date-text" id="latest-date">—</div>
       <div class="balls-row" id="latest-balls">
-        <!-- JS로 채워짐 -->
-        <div class="ball b4" style="opacity:.3">?</div>
-        <div class="ball b4" style="opacity:.3">?</div>
-        <div class="ball b4" style="opacity:.3">?</div>
-        <div class="ball b4" style="opacity:.3">?</div>
-        <div class="ball b4" style="opacity:.3">?</div>
-        <div class="ball b4" style="opacity:.3">?</div>
+        <div class="ball b4" style="opacity:.22">?</div>
+        <div class="ball b4" style="opacity:.22">?</div>
+        <div class="ball b4" style="opacity:.22">?</div>
+        <div class="ball b4" style="opacity:.22">?</div>
+        <div class="ball b4" style="opacity:.22">?</div>
+        <div class="ball b4" style="opacity:.22">?</div>
         <div class="plus-sign">+</div>
-        <div class="ball b-bonus" style="opacity:.3">?</div>
+        <div class="ball b-bonus" style="opacity:.22">?</div>
       </div>
-
+      <div class="ball-label-row">
+        <div class="label-section win-section">
+          <div class="label-line"></div>
+          <span class="label-txt">당첨번호</span>
+          <div class="label-line"></div>
+        </div>
+        <div style="width:26px;flex-shrink:0"></div>
+        <div class="label-section bonus-section">
+          <div class="label-line"></div>
+          <span class="label-txt">보너스번호</span>
+          <div class="label-line"></div>
+        </div>
+      </div>
     </div>
 
-  </div><!-- .main-wrap -->
-
+  </div><!-- .cards-wrap -->
 </div><!-- .page-wrap -->
 
 <script>
-// ══════════════════════════════════════════════════════════════
-// 배경 워터마크 숫자 생성
-// ══════════════════════════════════════════════════════════════
+// ── 배경 워터마크 숫자 ─────────────────────────────────────
 (function(){
   const wrap = document.getElementById('bg-nums');
   const nums = [1,7,11,16,23,28,33,40,4,19,38,6,25,42,13,31,45,8,22,36,3,17,29,44,10];
-  const positions = [
+  const pos  = [
     [5,3],[15,18],[25,7],[35,22],[50,5],[65,15],[78,3],[88,20],
     [5,40],[18,55],[30,38],[45,48],[60,35],[72,50],[85,42],
     [8,70],[20,78],[35,65],[50,72],[65,62],[78,80],[90,68],
     [3,88],[25,90],[55,88]
   ];
-  nums.forEach((n,i) => {
+  nums.forEach((n, i) => {
     const el = document.createElement('div');
     el.className = 'bg-num';
     el.textContent = n;
-    const [l,t] = positions[i] || [Math.random()*90, Math.random()*90];
+    const [l, t] = pos[i] || [Math.random()*90, Math.random()*90];
     el.style.left = l + '%';
     el.style.top  = t + '%';
     wrap.appendChild(el);
   });
 })();
 
-// ══════════════════════════════════════════════════════════════
-// 번호 → 볼 CSS 클래스
-// ══════════════════════════════════════════════════════════════
+// ── 번호 → 볼 클래스 ──────────────────────────────────────
 function ballClass(n, isBonus) {
   if (isBonus) return 'b-bonus';
-  if (n <= 10)  return 'b1';
-  if (n <= 20)  return 'b2';
-  if (n <= 30)  return 'b3';
-  if (n <= 40)  return 'b4';
+  if (n <= 10) return 'b1';
+  if (n <= 20) return 'b2';
+  if (n <= 30) return 'b3';
+  if (n <= 40) return 'b4';
   return 'b5';
 }
-
-function makeBall(n, isBonus, sizeClass) {
-  const cls = ballClass(n, isBonus);
-  const sz  = sizeClass || '';
-  return `<div class="ball ${cls} ${sz}">${n}</div>`;
+function makeBall(n, isBonus, extra) {
+  const cls = ballClass(n, isBonus) + (extra ? ' ' + extra : '');
+  return `<div class="ball ${cls}">${n}</div>`;
 }
 
-// ══════════════════════════════════════════════════════════════
-// 카운트다운
-// ══════════════════════════════════════════════════════════════
-let _nextDrawTs = 0;
-
+// ── 카운트다운 ─────────────────────────────────────────────
+let _nextTs = 0;
 function startCountdown() {
   function tick() {
-    if (!_nextDrawTs) return;
-    const now  = Math.floor(Date.now() / 1000);
-    const diff = _nextDrawTs - now;
+    if (!_nextTs) return;
+    const diff = _nextTs - Math.floor(Date.now() / 1000);
     if (diff <= 0) {
-      document.getElementById('cd-d').textContent = '00';
-      document.getElementById('cd-h').textContent = '00';
-      document.getElementById('cd-m').textContent = '00';
-      document.getElementById('cd-s').textContent = '00';
+      ['cd-d','cd-h','cd-m','cd-s'].forEach(id => document.getElementById(id).textContent = '00');
       return;
     }
-    const d = Math.floor(diff / 86400);
-    const h = Math.floor((diff % 86400) / 3600);
-    const m = Math.floor((diff % 3600) / 60);
-    const s = diff % 60;
-    document.getElementById('cd-d').textContent = String(d).padStart(2,'0');
-    document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
-    document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
-    document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+    document.getElementById('cd-d').textContent = String(Math.floor(diff / 86400)).padStart(2, '0');
+    document.getElementById('cd-h').textContent = String(Math.floor(diff % 86400 / 3600)).padStart(2, '0');
+    document.getElementById('cd-m').textContent = String(Math.floor(diff % 3600 / 60)).padStart(2, '0');
+    document.getElementById('cd-s').textContent = String(diff % 60).padStart(2, '0');
   }
   tick();
   setInterval(tick, 1000);
 }
 
-// ══════════════════════════════════════════════════════════════
-// /api/info 로드
-// ══════════════════════════════════════════════════════════════
+// ── /api/info 로드 ────────────────────────────────────────
 async function loadInfo() {
   try {
     const res  = await fetch('/api/info');
-    const data = await res.json();
-    if (data.status !== 'ok') return;
+    const json = await res.json();
+    if (json.status !== 'ok') return;
 
-    // 다음 회차
-    document.getElementById('next-draw-no').textContent = data.next_draw_no || '—';
-    document.getElementById('next-draw-date').textContent = data.next_draw_date ? `(${data.next_draw_date})` : '';
-    _nextDrawTs = data.next_draw_ts || 0;
+    document.getElementById('next-draw-no').textContent   = json.next_draw_no  || '—';
+    document.getElementById('next-draw-date').textContent = (json.next_draw_date || '') + ' 추첨 예정';
+    _nextTs = json.next_draw_ts || 0;
     startCountdown();
 
-    // 최근 추첨
-    document.getElementById('latest-round').textContent = `제 ${data.latest_draw_no} 회`;
-    document.getElementById('latest-date').textContent  = data.latest_date || '';
+    document.getElementById('latest-round-no').textContent = '제' + (json.latest_draw_no || '—') + '회';
+    document.getElementById('latest-date').textContent     = (json.latest_date || '') + ' 추첨';
 
-    const numbers = data.latest_numbers || [];
-    const bonus   = data.latest_bonus;
-    const ballsEl = document.getElementById('latest-balls');
-    if (numbers.length === 6) {
-      let html = numbers.map(n => makeBall(n, false)).join('');
-      html += '<div class="plus-sign">+</div>';
-      html += makeBall(bonus, true);
-      ballsEl.innerHTML = html;
+    const nums  = json.latest_numbers || [];
+    const bonus = json.latest_bonus;
+    if (nums.length === 6) {
+      const ballsEl = document.getElementById('latest-balls');
+      ballsEl.innerHTML =
+        nums.map(n => makeBall(n, false)).join('') +
+        '<div class="plus-sign">+</div>' +
+        makeBall(bonus, true);
     }
   } catch(e) {
     console.warn('loadInfo 실패:', e);
   }
 }
 
-// ══════════════════════════════════════════════════════════════
-// 예상 번호 버튼 클릭
-// ══════════════════════════════════════════════════════════════
+// ── 예상 번호 버튼 ─────────────────────────────────────────
 async function onPredictClick() {
-  const overlay = document.getElementById('loading-overlay');
-  overlay.classList.add('show');
-  document.getElementById('loading-msg').textContent = 'AI 분석 중... 잠시만 기다려 주세요';
-  document.getElementById('btn-predict').disabled = true;
+  const ov  = document.getElementById('loading-overlay');
+  const btn = document.getElementById('btn-predict');
+  ov.classList.add('show');
+  btn.disabled = true;
 
   try {
-    const config = {
-      start_draw:            1,
-      max_draw:              0,
-      deadzone_window:       25,
-      top_candidate_count:   20,
-      output_limit:          5,
-      recent_weight:         40,
-      missing_weight:        20,
-      square_weight:         0,
-      deadzone_weight:       15,
-      zone_weight:           15,
-      mix_previous_ratio:    5,
-      max_overlap:           3,
-      max_popularity_risk:   3,
-      backtest_rounds:       100,
-      backtest_train_window: 150,
-      sum_min:               100,
-      sum_max:               170,
-      min_ac:                7,
-      odd_min:               2,
-      odd_max:               4,
-      high_min:              2,
-      high_max:              4,
+    const cfg = {
+      start_draw:1, max_draw:0, deadzone_window:25,
+      top_candidate_count:20, output_limit:5,
+      recent_weight:40, missing_weight:20, square_weight:0,
+      deadzone_weight:15, zone_weight:15, mix_previous_ratio:5,
+      max_overlap:3, max_popularity_risk:3,
+      backtest_rounds:100, backtest_train_window:150,
+      sum_min:100, sum_max:170, min_ac:7,
+      odd_min:2, odd_max:4, high_min:2, high_max:4,
     };
-
     const res  = await fetch('/api/generate', {
-      method:  'POST',
-      headers: {'Content-Type':'application/json'},
-      body:    JSON.stringify(config),
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(cfg),
     });
     const json = await res.json();
-
-    overlay.classList.remove('show');
-    document.getElementById('btn-predict').disabled = false;
-
-    if (json.status !== 'ok') {
-      alert('분석 실패: ' + (json.message || '서버 오류'));
-      return;
-    }
+    ov.classList.remove('show');
+    btn.disabled = false;
+    if (json.status !== 'ok') { alert('오류: ' + (json.message || '서버 오류')); return; }
     renderPopup(json);
   } catch(e) {
-    overlay.classList.remove('show');
-    document.getElementById('btn-predict').disabled = false;
+    ov.classList.remove('show');
+    btn.disabled = false;
     alert('요청 실패: ' + e.message);
   }
 }
 
-// ══════════════════════════════════════════════════════════════
-// 결과 팝업 렌더링
-// ══════════════════════════════════════════════════════════════
-const RANK_EMOJI = ['🥇','🥈','🥉','4️⃣','5️⃣'];
-
+// ── 팝업 렌더링 (순위 / 번호 / 총점) ─────────────────────
 function renderPopup(json) {
-  const combos   = json.combinations || [];
-  const warnings = json.warnings     || [];
-  const data     = json.data         || {};
+  const combos = json.combinations || [];
+  const data   = json.data || {};
 
-  // 회차 정보
-  const drawInfo = data.latest_draw_no
-    ? `제 ${data.latest_draw_no + 1}회 예상 번호 (${data.total_draws || 0}회차 분석)`
+  document.getElementById('popup-info').textContent = data.latest_draw_no
+    ? `제${data.latest_draw_no + 1}회 예상 번호 · ${(data.total_draws || 0).toLocaleString()}회차 분석`
     : '';
-  document.getElementById('popup-draw-info').textContent = drawInfo;
 
-  // 조합 rows
-  const combosEl = document.getElementById('popup-combos');
-  combosEl.innerHTML = '';
-
+  const tbody = document.getElementById('combo-tbody');
+  tbody.innerHTML = '';
   combos.forEach((c, i) => {
-    const row = document.createElement('div');
-    row.className = 'combo-row';
-
-    const rankEmoji = RANK_EMOJI[i] || `${i+1}.`;
+    const tr    = document.createElement('tr');
     const balls = c.numbers.map(n => makeBall(n, false, 'ball-xs')).join('');
-
-    row.innerHTML = `
-      <div class="combo-rank">${rankEmoji}</div>
-      <div class="combo-balls">${balls}</div>
-      <div class="combo-meta">
-        합계 <b>${c.total}</b> &nbsp;·&nbsp;
-        홀수 <b>${c.odd_count}</b>개 &nbsp;·&nbsp;
-        고번호 <b>${c.high_count}</b>개 &nbsp;·&nbsp;
-        AC값 <b>${c.ac_value}</b> &nbsp;·&nbsp;
-        점수 <b>${c.score.toFixed(1)}</b>
-      </div>
+    tr.innerHTML = `
+      <td class="td-rank">${i + 1}</td>
+      <td><div class="td-balls">${balls}</div></td>
+      <td class="td-score">${c.score.toFixed(1)}</td>
     `;
-    combosEl.appendChild(row);
+    tbody.appendChild(tr);
   });
 
-  // 경고
-  const warnEl = document.getElementById('popup-warnings');
-  warnEl.textContent = warnings.length ? '⚠ ' + warnings.join(' / ') : '';
-
-  // 팝업 표시
   document.getElementById('result-popup').classList.add('show');
 }
 
-function closePopup(e) {
-  if (e.target === document.getElementById('result-popup')) {
+function handlePopupBg(e) {
+  if (e.target === document.getElementById('result-popup'))
     document.getElementById('result-popup').classList.remove('show');
-  }
 }
 function closePopupBtn() {
   document.getElementById('result-popup').classList.remove('show');
 }
 
-// ══════════════════════════════════════════════════════════════
-// 초기 실행
-// ══════════════════════════════════════════════════════════════
+// ── 초기 실행 ─────────────────────────────────────────────
 loadInfo();
 </script>
 </body>

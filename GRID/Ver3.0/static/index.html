@@ -456,13 +456,13 @@ html,body{
       <div class="draw-select-wrap">
         <span class="draw-select-lbl">시작회차</span>
         <select id="sel-start" class="draw-sel">
-          <option value="1">제1회 (전체)</option>
+          <option value="1">1</option>
         </select>
       </div>
       <div class="draw-select-wrap">
         <span class="draw-select-lbl">마지막회차</span>
         <select id="sel-end" class="draw-sel">
-          <option value="0">최신회차</option>
+          <option value="0">—</option>
         </select>
       </div>
       <button id="btn-predict" onclick="onPredictClick()">예상 번호 조합 생성</button>
@@ -630,18 +630,18 @@ function populateDropdowns(latestNo) {
   if (!selStart || !selEnd) return;
 
   // 시작회차 옵션 생성
-  const startOpts = [{ label: `제1회 (전체 ${latestNo}회)`, value: 1 }];
-  for (const [cnt, lbl] of [[1000,'최근1000'], [500,'최근500'], [200,'최근200'], [100,'최근100'], [50,'최근50']]) {
+  const startOpts = [{ label: `1`, value: 1 }];
+  for (const cnt of [1000, 500, 200, 100, 50]) {
     const from = latestNo - cnt + 1;
-    if (from > 1) startOpts.push({ label: `제${from}회 (${lbl}회)`, value: from });
+    if (from > 1) startOpts.push({ label: `${from}`, value: from });
   }
   selStart.innerHTML = startOpts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
 
-  // 마지막회차 옵션 생성
-  const endOpts = [{ label: `최신 제${latestNo}회`, value: 0 }];
+  // 마지막회차 옵션 생성 (value=0 은 "최신" 의미, 표시는 실제 회차번호)
+  const endOpts = [{ label: `${latestNo}`, value: 0 }];
   for (const offset of [1, 4, 9, 19, 49, 99]) {
     const n = latestNo - offset;
-    if (n > 0) endOpts.push({ label: `제${n}회 (-${offset}회)`, value: n });
+    if (n > 0) endOpts.push({ label: `${n}`, value: n });
   }
   selEnd.innerHTML = endOpts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
 

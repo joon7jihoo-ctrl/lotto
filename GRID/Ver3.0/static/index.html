@@ -64,9 +64,9 @@ html,body{
 /* ── 공통 카드 ── */
 .card{
   background:#fff;
-  border-radius:14px;
-  box-shadow:0 3px 16px rgba(0,0,0,.12);
-  padding:18px 18px 20px;
+  border-radius:16px;
+  box-shadow:0 4px 20px rgba(0,0,0,.13);
+  padding:24px 24px 28px;
   flex:1;min-width:0;
 }
 
@@ -97,7 +97,7 @@ html,body{
 
 .draw-no-wrap{text-align:center;margin-bottom:3px}
 .draw-no-text{
-  font-size:26px;font-weight:800;
+  font-size:30px;font-weight:800;
   color:#111;letter-spacing:-.5px;
 }
 
@@ -123,10 +123,10 @@ html,body{
   padding:0 8px;
 }
 .cd-val{
-  font-size:46px;font-weight:800;
+  font-size:52px;font-weight:800;
   color:#e52748;line-height:1;
   letter-spacing:-.5px;
-  min-width:48px;text-align:center;
+  min-width:52px;text-align:center;
 }
 .cd-lbl{
   font-size:10px;color:#bbb;
@@ -141,7 +141,7 @@ html,body{
 }
 .result-round-text{
   text-align:center;
-  font-size:26px;font-weight:800;
+  font-size:30px;font-weight:800;
   color:#111;letter-spacing:-.5px;
   margin-bottom:2px;
 }
@@ -158,9 +158,9 @@ html,body{
   margin-bottom:8px;
 }
 .ball{
-  width:40px;height:40px;border-radius:50%;
+  width:46px;height:46px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:800;color:#fff;
+  font-size:15px;font-weight:800;color:#fff;
   box-shadow:0 2px 7px rgba(0,0,0,.18);
   flex-shrink:0;
   text-shadow:0 1px 3px rgba(0,0,0,.22);
@@ -281,18 +281,57 @@ html,body{
   text-align:center;margin-top:12px;
 }
 
-/* ── 반응형 ── */
-@media(max-width:620px){
-  .cards-wrap{flex-direction:column}
-  .cd-val{font-size:36px;min-width:38px}
-  .cd-unit{padding:0 5px}
-  .draw-no-text,.result-round-text{font-size:22px}
-  .ball{width:34px;height:34px;font-size:11px}
-  .logo-wrap img{height:30px}
+/* ── 반응형 ─────────────────────────────────────────────────
+   Desktop  ≥ 900px  : 두 카드 나란히, 큰 사이즈 (기본값)
+   Tablet   600-899px: 두 카드 나란히, 컴팩트 압축
+   Mobile   < 600px  : 카드 위아래 쌓임, 모바일 최적화
+──────────────────────────────────────────────────────────── */
+
+/* 태블릿 (≤ 899px): 두 카드 나란히, 크기 압축 */
+@media(max-width:899px){
+  .page-wrap{padding:12px 10px 36px}
+  .btn-card{padding:12px 14px;border-radius:12px}
+  .cards-wrap{gap:10px}
+  .card{padding:16px 14px 18px;border-radius:14px}
+  .logo-wrap{margin-bottom:10px;padding-bottom:10px}
+  .logo-wrap img{height:28px}
+  .draw-no-text,.result-round-text{font-size:20px}
+  .draw-schedule-text,.result-date-text{font-size:11px}
+  .cd-header,.result-header-label{font-size:10px}
+  .cd-val{font-size:32px;min-width:32px}
+  .cd-unit{padding:0 4px}
+  .cd-lbl{font-size:9px}
+  .ball{width:32px;height:32px;font-size:11px}
+  .plus-sign{font-size:13px}
+  .balls-row{gap:4px}
+  .label-txt{font-size:9px}
+  #btn-predict{font-size:13px;padding:12px 10px}
+  .price-tag{font-size:10px}
 }
-@media(max-width:360px){
-  .cd-val{font-size:30px;min-width:32px}
-  .ball{width:28px;height:28px;font-size:10px}
+
+/* 모바일 (≤ 599px): 카드 수직 쌓임 */
+@media(max-width:599px){
+  .page-wrap{padding:10px 10px 32px}
+  .cards-wrap{flex-direction:column;gap:10px}
+  .card{padding:18px 18px 22px;border-radius:14px}
+  .logo-wrap img{height:32px}
+  .draw-no-text,.result-round-text{font-size:26px}
+  .draw-schedule-text{font-size:12px}
+  .cd-val{font-size:44px;min-width:44px}
+  .cd-unit{padding:0 7px}
+  .cd-lbl{font-size:10px}
+  .ball{width:40px;height:40px;font-size:13px}
+  .plus-sign{font-size:15px}
+  .balls-row{gap:5px}
+  #btn-predict{font-size:14px;padding:14px}
+}
+
+/* 초소형 화면 (≤ 380px) */
+@media(max-width:380px){
+  .cd-val{font-size:36px;min-width:36px}
+  .cd-unit{padding:0 5px}
+  .ball{width:34px;height:34px;font-size:11px}
+  .balls-row{gap:4px}
 }
 </style>
 </head>
